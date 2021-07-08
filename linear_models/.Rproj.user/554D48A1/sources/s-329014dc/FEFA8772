@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1551192070309.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2424148821",
+    "id" : "FEFA8772",
+    "lastKnownWriteTime" : 1551192063,
+    "last_content_update" : 1551192063,
+    "path" : "/cloud/project/Assignments/Assignment2.Rmd",
+    "project_path" : "Assignments/Assignment2.Rmd",
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

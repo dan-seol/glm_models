@@ -1,0 +1,511 @@
+---
+title: "MATH 423 - Assignment 1, Dan Yunheum Seol - 260677676"
+output: pdf_document
+    
+  
+---
+ This document was written using \texttt{R Markdown}.
+
+Part (a).
+The following part will present summary of 3 SLR models with respective data set for each.
+
+
+Simple Linear Regression for Data set 1
+```{r}
+
+#Reading in the data
+
+file1<-"http://www.math.mcgill.ca/yyang/regression/data/a1-1.txt"
+data1<-read.table(file1,header=TRUE)
+
+#Plotting the data with its center indicated
+
+plot(data1$x,data1$y,pch=18, xlab = "X1", ylab = "Y1")
+x1<-data1$x
+y1<-data1$y
+abline(v=mean(x1),h=mean(y1),lty=2)
+
+#Fitting our model for the line of best fit
+
+model1 <- lm(y1 ~ x1)
+summary(model1)
+coef(model1)
+abline(coef(model1),col='red')
+title('Line of best fit for Data Set 1')
+
+#Residuals
+m1.resids<-residuals(model1)
+m1.fitted<-fitted(model1)
+
+
+
+#Plots for Residual v. X1, Residual v. Fitted values to test whether our model holds
+plot(x1, m1.resids,xlab='X1',ylab='Residuals',pch=3,ylim=range(-50,50));
+abline(h=0,lty=2); abline(h=10, lty=2); abline(h=-10, lty=2)
+title('Residuals vs X1')
+plot(m1.fitted, m1.resids,xlab=expression(hat(y1)),ylab='Residuals',
+pch=3,ylim=range(-50,50));abline(h=0,lty=2); abline(h=10, lty=2); abline(h=-10, lty=2)
+title('Residuals vs Fitted values')
+```
+Remark: We can assume there is a positive linear relationship between the covariate and the outcome.
+
+Our estimate for the intercept and the slope would be $$\widehat \beta_0=0.02676552$$ and $$\widehat \beta_1=1.72512091$$, respectively.
+
+Therefore, our line of best fit is given by:
+
+$$\widehat y= \widehat \beta_0 + \widehat \beta_1x => \widehat y=0.02676552 + 1.72512091x$$
+
+  
+
+R also states the result for the tests of the intercept and the slope estimates using t distribution with null and alternative hypotheses.
+  $$H_0: \beta_0 = 0$$ and $$H_a: \beta_0 \neq 0$$
+  $$H_0: \beta_1 = 0$$ and $$H_a: \beta_1 \neq 0$$
+  
+  We can see that we have failed to reject the null $$H_0$$ for the intercept estimate, but we have sufficient evidence to reject the null $$H_0$$ for the slope estimate.
+
+From the residual plots, we can notice from both residual plots that they are centered around zero and have constant variance. Our assumptions for the expected value of the error and homoscedasticity of variance have been kept. We could say that our residual, $$e_i$$, represents the behaviour our true random error, $$\epsilon_i$$. 
+
+#Data set 2
+```{r}
+file2<- "http://www.math.mcgill.ca/yyang/regression/data/a1-2.txt"
+data2<-read.table(file2,header=TRUE)
+plot(data2$x,data2$y,pch=18, xlab = "X2", ylab ="Y2"  )
+x2<-data2$x
+y2<-data2$y
+abline(v=mean(x2),h=mean(y2),lty=2)
+model2 <- lm(y2 ~ x2)
+summary(model2)
+coef(model2)
+abline(coef(model2),col='blue')
+title('Line of best fit for Data Set 2')
+
+#Residuals
+m2.resids<-residuals(model2)
+m2.fitted<-fitted(model2)
+
+
+
+#Plotting residuals - Resid v X2
+plot(x2, m2.resids,xlab='X2',ylab='Residuals',pch=".",ylim=range(-250,250));
+abline(h=0,lty=2); abline(h=120, lty=2);
+abline(h=-120, lty=2)
+title('Residuals vs X2')
+
+#Plotting resid - Resid V hat(Y2)
+plot(m2.fitted, m2.resids,xlab=expression(hat(y2)),ylab='Residuals',
+pch=".",ylim=range(-250,250));abline(h=0,lty=2);abline(h=120, lty=2); abline(h=-120, lty=2)
+title('Residuals vs Fitted values')
+```
+
+Remark: We can assume there is a positive linear relationship between the covariate and the outcome.
+
+Our estimate for the intercept and the slope would be $$\widehat \beta_0=10.66085$$ and $$\widehat \beta_1=7.03795$$, respectively.
+
+Therefore, our line of best fit is given by:
+$$
+\widehat y = \widehat \beta_0 + \widehat \beta_1x
+=> \widehat y = 10.66085 + 7.03795x$$
+  
+
+R also states the result for the tests of the intercept and the slope estimates using t distribution with null and alternative hypotheses.
+  $$H_0: \beta_0 = 0$$ and $$H_a: \beta_0 \neq 0$$
+  $$H_0: \beta_1 = 0$$ and $$H_a: \beta_1 \neq 0$$
+  
+  We can see that but we have sufficient evidence to reject the null $$H_0$$ for both the intercept estimate and the slope estimate.
+
+From the residual plots, we can notice from both residual plots that they are centered around zero and have constant variance. Our assumptions for the expected value of the error and homoscedasticity of variance have been kept. We could say that our residual, $$e_i$$, represents the behaviour our true random error, $$\epsilon_i$$. 
+
+N.B I have also added plots for Residuals v. Fitted value to get my result confirmed.
+
+#Data set 3
+```{r}
+file3<- "http://www.math.mcgill.ca/yyang/regression/data/a1-3.txt"
+data3<-read.table(file3,header=TRUE)
+plot(data3$x,data3$y,pch=18, xlab = "X3", ylab="Y3")
+x3<-data3$x
+y3<-data3$y
+abline(v=mean(x3),h=mean(y3),lty=2)
+model3 <- lm(y3 ~ x3)
+summary(model3)
+coef(model3)
+abline(coef(model3),col='orange')
+title('Line of best fit for Data Set 3')
+
+#Residuals
+
+m3.resids<-residuals(model3)
+m3.fitted<-fitted(model3)
+
+
+
+#Plots for Residuals v. X3 and Residuals v. Fitted Values
+plot(x3, m3.resids,xlab='X3',ylab='Residuals',
+pch=19,ylim=range(-10,10));abline(h=0,lty=2);abline(h=5, lty=2);
+abline(h=-5,lty=2); 
+abline(v=0, lty=2); abline(v=-4.0,lty=2)
+title('Residuals vs
+      X2')
+plot(m3.fitted, m3.resids,xlab=expression(hat(y2)),ylab='Residuals',
+pch=19,ylim=range(-10,10));abline(h=0,lty=2);abline(h=5, lty=2);
+abline(h=-5,lty=2); abline(v=0.5, lty=2); abline(v=-1.0, lty=2)
+title('Residuals vs Fitted values')
+```
+Remark: We might be able to assume that there is a weak positive linear relationship between the covariate and the outcome.
+
+Our estimate for the intercept and the slope would be $$\widehat \beta_0=0.2403$$ and $$\widehat \beta_1=0.3268$$, respectively.
+
+Therefore, our line of best fit is given by:
+
+$$\widehat y= \widehat \beta_0 + \widehat \beta_1x
+=> \widehat y= 0.2403 + 0.3268x$$
+  
+
+R also states the result for the tests of the intercept and the slope estimates using t distribution with null and alternative hypotheses.
+  $$H_0: \beta_0 = 0$$ and $$H_a: \beta_0 \neq 0$$
+  $$H_0: \beta_1 = 0$$ and $$H_a: \beta_1 \neq 0$$
+  
+  We can see that but we have failed to reject the null $$H_0$$ for both the intercept estimate and the slope estimate.
+
+
+Both residual plots suggest that our homogeneity of variance assumption might have been broken. We can notice the variance is actually increasing as X3 increases. However, it is rather difficult to make correct judgment due to a significant number of outliers.
+
+N.B I have also added plots for Residuals v. Fitted value to get my result confirmed.
+
+Part b
+
+From class, we know
+
+$$\left[{\begin{array}{cc}
+n & \sum_{i=1}^n x_{i1}\\
+\sum_{i=1}^n x_{i1} &\sum_{i=1}^n x^2_{i1}\\
+\end{array}}\right]
+\left[ {\begin{array}{c}
+\beta_0\\
+\beta_1\\
+\end{array}}\right]
+=
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+\sum_{i=1}^n x_{i1}y_i
+\end{array}}\right]$$
+
+
+
+
+so
+$$
+\left[{\begin{array}{c}
+\widehat \beta_0\\
+\widehat \beta_1
+\end{array}}\right]
+=
+\left[ {\begin{array}{cc}
+n & \sum_{i=1}^n x_{i1}\\
+\sum_{i=1}^n x_{i1} &\sum_{i=1}^n x^2_{i1}\\
+\end{array}}\right]^{-1}
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+\sum_{i=1}^n x_{i1}y_i
+\end{array}}\right]$$
+
+and 
+
+
+$$\left[ {\begin{array}{cc}
+n & \sum_{i=1}^n x_{i1}\\
+\sum_{i=1}^n x_{i1} &\sum_{i=1}^n x^2_{i1}\\
+\end{array}}\right]^{-1}
+=
+\frac{1}{n\sum_{i=1}^n x^2_{i1}-(\sum_{i=1}^n x_{i1} )^2}
+\left[ {\begin{array}{cc}
+\sum_{i=1}^n x^2_{i1}& -\sum_{i=1}^n x_{i1}\\
+-\sum_{i=1}^n x_{i1} & n
+\end{array}}\right]$$
+
+
+
+then we have
+$$
+\left[{\begin{array}{c}
+\widehat \beta_0\\
+\widehat \beta_1
+\end{array}}\right]
+=
+\frac{1}{n\sum_{i=1}^n x^2_{i1}-(\sum_{i=1}^n x_{i1} )^2}
+\left[ {\begin{array}{cc}
+\sum_{i=1}^n x^2_{i1}& -\sum_{i=1}^n x_{i1}\\
+-\sum_{i=1}^n x_{i1} & n
+\end{array}}\right]
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+\sum_{i=1}^n x_{i1}y_i
+\end{array}}\right]$$
+
+$$\widehat \beta_0 = \frac{1}{n\sum_{i=1}^n x^2_{i1}-(\sum_{i=1}^n x_{i1} )^2} [\sum_{i=1}^n x_{i1}^2\sum_{i=1}^ny_i-\sum_{i=1}^n x_{i1}\sum_{i=1}^nx_{i1}y_i] \\= 1/S_{xx} [\bar{y}\sum_{i=1}^nx_{i1}^2-\bar{x}\sum_{i=1}^nx_{i1}y_i]\\$$
+
+
+$$\widehat \beta_1 = \frac{1}{n\sum_{i=1}^n x^2_{i1}-(\sum_{i=1}^n x_{i1} )^2}[n\sum_{i=1}^nx_{i1}y_i-\sum_{i=1}^nx_{i1}\sum_{i=1}^ny_i] \\= \frac{1}{Sxx} [\sum_{i=1}^nx_{i1}y_i - \frac{1}{n}\sum_{i=1}^nx_{i1}\sum_{i=1}^ny_i]$$
+
+
+
+
+(i) Location shift : $$x_{i1new} <= x_{i1}-m$$
+
+Replace all $$x_{i1}$$ as $$x_{i1}-m$$, then
+
+$$\left[{\begin{array}{c}
+\tilde \beta_0\\
+\tilde \beta_1
+\end{array}}\right]
+=
+\frac{1}{n\sum_{i=1}^n (x_{i1}-m)^2-(\sum_{i=1}^n x_{i1}-m)^2}
+\left[ {\begin{array}{cc}
+\sum_{i=1}^n (x_{i1}-m)^2& -\sum_{i=1}^n (x_{i1}-m)\\
+-\sum_{i=1}^n (x_{i1}-m) & n
+\end{array}}\right]
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+\sum_{i=1}^n (x_{i1}-m)y_i
+\end{array}}\right]$$
+
+
+
+$$\tilde \beta_0 \\= \frac{1}{n\sum_{i=1}^n (x_{i1}-m)^2-(\sum_{i=1}^n (x_{i1}-m) )^2} [\sum_{i=1}^n (x_{i1}-m)^2\sum_{i=1}^ny_i-\sum_{i=1}^n (x_{i1}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$
+$$= \frac{1}{\sum_{i=1}^n (x_{i1}-m)^2-\frac{1}{n}(\sum_{i=1}^n (x_{i1}-m) )^2} [\frac{1}{n}\sum_{i=1}^n (x_{i1}-m)^2\sum_{i=1}^ny_i-\frac{1}{n}\sum_{i=1}^n (x_{i1}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$
+
+$$\tilde \beta_1$$ $$= \frac{1}{n\sum_{i=1}^n (x_{i1}-m)^2-(\sum_{i=1}^n (x_{i1}-m) )^2}
+[n\sum_{i=1}^n(x_{i1}-m)y_i-\sum_{i=1}^n(x_{i1}-m)\sum_{i=1}^ny_i]$$ 
+$$= \frac{1}{\sum_{i=1}^n (x_{i1}-m)^2-\frac{1}{n}(\sum_{i=1}^n (x_{i1}-m) )^2} [\sum_{i=1}^n(x_{i1}-m)y_i-\frac{1}{n}\sum_{i=1}^n(x_{i1}-m)\sum_{i=1}^ny_i]$$
+
+
+Remark
+$$\sum_{i=1}^n (x_{i1}-m)^2-\frac{1}{n}(\sum_{i=1}^n (x_{i1}-m) )^2$$ $$= \sum_{i=1}^n (x_{i1}^2-2mx_{i1}+m^2) - ({\bar{x}-m)(\sum_{i=1}^nx_{i1} - nm)}$$ $$= \sum_{i=1}^nx_{i1}^2 - 2nm\bar{x}+nm^2 - n \bar{x}^2 +nm\bar{x}+nm\bar{x} -nm^2$$ 
+$$= \sum_{i=1}^nx_{i1}^2 - n\bar{x}^2 =S_{xx}$$
+
+
+then 
+
+$$\tilde \beta_1 = \frac{1}{S_{xx}} [\sum_{i=1}^n(x_{i1}-m)y_i-\frac{1}{n}\sum_{i=1}^n(x_{i1}-m)\sum_{i=1}^ny_i]$$
+$$= \frac{1}{S_{xx}}[\sum_{i=1}^nx_{i1}y_i-m\sum_{i=1}^ny_i - \frac{1}{n}\sum_{i=1}^nx_
+{i1}\sum_{i=1}^ny_i+m\sum_{i=1}^ny_i]$$
+$$= \frac{1}{S_{xx}} [\sum_{i=1}^nx_{i1}y_i - \frac{1}{n}\sum_{i=1}^nx_{i1}\sum_{i=1}^ny_i] \\= \widehat \beta_1$$
+
+
+and 
+
+$$\tilde \beta_0 = \frac{1}{S_{xx}}[\frac{1}{n}\sum_{i=1}^ny_i\sum_{i=1}^n(x_{i1}-m)^2 -\frac{1}{n}\sum_{i=1}^n(x_{i1}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$ 
+$$\\= \frac{1}{S_{xx}}[\bar{y}\sum_{i=1}^n(x_{i1}-m)^2 -(\bar{x}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$ $$= \frac{1}{S_{xx}}[\bar{y}\sum_{i=1}^n(x_{i1}-m)^2 -(\bar{x}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$ $$=\frac{1}{S_{xx}}[\bar{y}\sum_{i=1}^n(x_{i1}-m)^2-\bar{y}n(\bar{x}-m)^2+\bar{y}n(\bar{x}-m)^2 -(\bar{x}-m)\sum_{i=1}^n(x_{i1}-m)y_i]$$
+$$=\bar{y} - (\frac{\sum_{i1}(x_{i1}-m)y_i-\bar{y}n(\bar{x}-m)}{S_{xx}})(\bar{x}-m)$$ 
+$$=\bar{y} - \frac{\sum_{i=1}^nx_{i1}y_i-m\sum_{i=1}^ny_i-\frac{\sum_{i=1}^nx_{i1}y_i}{n}+m\sum_{i=1}^ny_i}{S_{xx}}$$ 
+$$=\bar{y} - \frac{\sum_{i=1}^nx_{i1}y_i-\frac{\sum_{i=1}^nx_{i1}y_i}{n}}{S_{xx}}$$
+$$=\bar{y} - \widehat \beta_1 (\bar{x}-m) = \widehat \beta_0 +\widehat \beta_1m$$
+
+so $$\widehat \beta_1$$ remains the same whereas $$\widehat \beta_0$$ increases by $$\widehat \beta_1 m$$
+
+Let's look at a numerical example.
+
+Suppose m = 3
+```{r}
+length(x1)
+
+#forming a vector m = (m, m, m, ...)
+m <- rep(3, 27)
+m
+
+#shifting location by m
+x1_dash <- x1-m
+
+#fitting new model
+model1_dash <- lm(y1 ~ x1_dash)
+b1_dash <- coef(model1_dash)[2]
+b0_dash <- coef(model1_dash)[1]
+
+#our $beta_0$
+b0_dash
+#Our theory suggests our $beta_0$ should be equal to
+mean(y1) - b1_dash*(mean(x1_dash))
+paste("The shifted model has coefficients :", coef(model1_dash))
+paste("The original model has coeffcients :", coef(model1))
+summary(model1_dash)
+
+```
+It seems that our numerical example agrees with what the theory has predicted.
+
+
+(ii) rescaling
+
+Replace all $$x_{i1}$$ as $$lx_{i1}$$, then since we know 
+
+
+$$\sum_{i=1}^n lx_{i1} =l\sum_{i=1}^n x_{i1}$$
+$$\left[{\begin{array}{c}
+\star \beta_0\\
+\star \beta_1
+\end{array}}\right]
+=
+\frac{1}{nl^2\sum_{i=1}^n x^2_{i1}-(l\sum_{i=1}^n x_{i1} )^2}
+\left[ {\begin{array}{cc}
+l^2\sum_{i=1}^n x^2_{i1}& -l\sum_{i=1}^n x_{i1}\\
+-l\sum_{i=1}^n x_{i1} & n
+\end{array}}\right]
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+l\sum_{i=1}^n x_{i1}y_i
+\end{array}}\right]
+$$
+
+
+$$\star \beta_0 = \frac{1}{nl^2\sum_{i=1}^n x^2_{i1}-l^2(\sum_{i=1}^n x_{i1} )^2} [l^2\sum_{i=1}^n x_{i1}^2\sum_{i=1}^ny_i-l^2\sum_{i=1}^n x_{i1}\sum_{i=1}^nx_{i1}y_i]$$
+
+$$l^2$$ would cancel out, so 
+
+$$\star \beta_0 = \widehat \beta_0$$
+The intercept remains intact, and for the slope
+
+$$\star \beta_1 = \frac{1}{nl^2\sum_{i=1}^n x^2_{i1}-l^2(\sum_{i=1}^n x_{i1} )^2}[nl\sum_{i=1}^nx_{i1}y_i-l\sum_{i=1}^nx_{i1}\sum_{i=1}^ny_i]$$
+
+If you reduce $$l$$ from the numerator, you will have
+
+$$\star \beta_1 = \frac{1}{nl\sum_{i=1}^n x^2_{i1}-l(\sum_{i=1}^n x_{i1} )^2}[n\sum_{i=1}^nx_{i1}y_i-\sum_{i=1}^nx_{i1}\sum_{i=1}^ny_i] \\=
+\frac{1}{l} \widehat \beta_1$$
+
+so our slope will shrink by $$\frac{1}{l}$$
+
+Let's take a numerical example once again, with $$l = 3$$
+```{r}
+x2_dash <- x2*3
+model2_dash <- lm(y2 ~x2_dash)
+
+#our original intercept
+coef(model2)[1]
+#our original slope
+coef(model2)[2]
+
+paste("The rescaled model has coefficients :", coef(model2_dash))
+paste("The original model has coefficients :", coef(model2))
+
+paste("If you multiply 1/3 to our original slope", 1/3*coef(model2)[2])
+
+```
+It shows that what our theory suggested holds.
+
+(iii)
+
+From class, we know
+$$\mathrm{E}[\widehat \beta_0 | X] = \beta_0\\
+\mathrm{E}[\widehat \beta_1 | X] = \beta_1$$
+$$\mathrm{Var}[\widehat \beta_0 | X] = \frac{\sigma^2}{nS_{xx}}[\sum_{i=1}^nx_{i1}^2] \\ = \frac{\sigma^2}{n}[1 + \frac{n\bar{x}^2}{Sxx}]$$
+
+$$\mathrm{Var}[\widehat \beta_1 | X] = \frac{\sigma^2}{S_{xx}}$$
+
+Location shift:
+
+$$\tilde \beta_0 = \widehat \beta_0 + \widehat \beta_1 m\\
+\\
+\tilde \beta_1 = \widehat \beta_1$$
+
+so
+
+$$\mathrm{E}[\tilde \beta_0|X] = \mathrm{E}[\widehat \beta_0 + \widehat \beta_1m|X] = \beta_0 + \beta_1m\\
+\mathrm{E}[\tilde \beta_1|X] = \mathrm{E}[\widehat \beta_1|X] = \beta_1$$
+Its intercept estimate is no longer an unbiased estimator, but the slope estimate remains unbiased.
+
+For variance, since $$S_{xx}$$ remains the same under location shift
+
+$$\mathrm{Var}[\tilde \beta_0 | X] = \frac{\sigma^2}{nS_{xx}}[\sum_{i=1}^n(x_{i1}-m)^2] \\ = \frac{\sigma^2}{n}[1 + \frac{n(\bar{x}-m)^2}{Sxx}]$$
+$$\mathrm{Var}[\tilde \beta_1 | X] = \mathrm{Var}[\widehat \beta_1 | X] =\frac{\sigma^2}{S_{xx}}$$
+
+We can notice that our estimate of the intercept shrinks.
+
+Rescaling:
+
+
+$$\star \beta_0 = \widehat \beta_0
+\\
+\star \beta_1 = \frac{1}{l}\widehat \beta_1$$
+
+so 
+
+$$\mathrm{E}[\star \beta_0|X] = \mathrm{E}[\widehat \beta_0|X ] = \beta_0 \\
+\mathrm{E}[\star\beta_1|X] = \mathrm{E}[\frac{1}{l}\widehat \beta_1|X] = \frac{1}{l}\beta_1$$
+
+Its intercept estimate remains unbiased but the slope estimate shrinks, making itself a biased estimator.
+
+For variance, 
+
+$$\mathrm{Var}[\star \beta_0|X] = \mathrm{Var}[\widehat \beta_0|X] \\= \frac{\sigma^2}{nS_{xx}}[\sum_{i=1}^nx_{i1}^2] \\ = \frac{\sigma^2}{n}[1 + \frac{n\bar{x}^2}{Sxx}]$$
+and
+
+
+$$\mathrm{Var}[\star \beta_1 |X] = \mathrm{Var}[ \frac{1}{l} \widehat \beta_1 |X] = \frac{\sigma^2}{l^2 S_{xx}}$$
+
+The variance for the intercept estimate remains the same, but our variance for the slope intercept shrinks.
+
+
+#Extra Question
+
+#Part 1.
+
+$$\|Y-X\beta\| = \sqrt{(Y-X\beta)^2} = \sqrt{\sum_{i=1}^n(y_i-\vec{x_{i}}\beta)^2} $$
+
+$$argmin({\|Y-X\beta\|}) = argmin(\sqrt{\sum_{i=1}^n(y_i-\vec{x_{i}}\beta)^2})$$
+$$\sqrt{\sum_{i=1}^n(y_i-\vec{x_{i}}\beta)^2} = \sqrt{\sum_{i=1}^n (y_i -\beta_0 - \beta_1x_{i1})^2} = S(\beta_0, \beta_1)$$
+We set the partial derivatives to 0
+
+For the intercept :
+$$0 =\frac{\partial S}{\partial \beta_0} = \frac{1}{2\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}} * -2\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))$$
+
+$$ = \frac{1}{2\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}} * -2\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}) = -\frac{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1})}{\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}}$$
+
+$$= -\frac{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1})}{\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}} =- \frac{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1})}{\|Y-X\beta\|} $$
+
+$$=> \frac{1}{\|Y-X\beta\|}\sum_{i=1}^ny_i = \frac{1}{\|Y-X\beta\|}(n\beta_0 +(\sum_{i=1}^nx_{i1})\beta_1)  $$
+, and for the slope : 
+$$0 =\frac{\partial S}{\partial \beta_1} = \frac{1}{2\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}} * -2\sum_{i=1}^nx_{i1}(y_i-\beta_0 - \beta_1x_{i1}))$$
+$$= -\frac{\sum_{i=1}^nx_{i1}(y_i-\beta_0 - \beta_1x_{i1})}{\sqrt{\sum_{i=1}^n(y_i-\beta_0 - \beta_1x_{i1}))^2}} =  -\frac{\sum_{i=1}^nx_{i1}(y_i-\beta_0 - \beta_1x_{i1})}{\|Y-X\beta\|} $$
+$$ => \frac{1}{\|Y-X\beta\|}\sum_{i=1}^nx_{i1}y_i = \frac{\sum_{i=1}^n(x_{i1})\beta_0 + \sum_{i=1}^n x_{i1}^2 \beta_1}{\|Y-X\beta\|}  $$
+$$
+\frac{1}{\|Y-X\beta\|}
+\begin{bmatrix}
+n & \sum_{i=1}^n x_{i1}\\
+\sum_{i=1}^n x_{i1} &\sum_{i=1}^n x^2_{i1}\\
+\end{bmatrix}
+\begin{bmatrix}
+\beta_0\\
+\beta_1\\
+\end{bmatrix}
+=
+\frac{1}{\|Y-X\beta\|}
+\begin{bmatrix}
+\sum_{i=1}^ny_i\\
+\sum_{i=1}^nx_{i1}y_i\\
+\end{bmatrix}
+$$
+
+$$
+\left[{\begin{array}{c}
+\widehat \beta_0\\
+\widehat \beta_1
+\end{array}}\right]
+=
+\frac{\|Y-X\beta\|}{(n\sum_{i=1}^n x^2_{i1}-(\sum_{i=1}^n x_{i1} )^2)}
+\left[ {\begin{array}{cc}
+\sum_{i=1}^n x^2_{i1}& -\sum_{i=1}^n x_{i1}\\
+-\sum_{i=1}^n x_{i1} & n
+\end{array}}\right]
+
+\frac{1}{\|Y-X\beta\|}
+\left[{\begin{array}{c}
+\sum_{i=1}^n y_i\\
+\sum_{i=1}^n x_{i1}y_i
+\end{array}}\right]$$
+
+Which is our equation for SLR least square estimates, since the Euclidean norms would cancel out.
+
+So our $\beta_0$ and $beta_0$ would be essentially the same least square estimates, but there would be some different characteristics. Firstly, the exaggerated difference between the fitted value and our actual outcome by using some of squares gets reduced.
+
+#Part 2.
+$$\sum_{i=1}^n|y_i-\vec{x_{i}}\beta| $$
+
+The fitted value whose absolute value of the difference from the actual outcome value is larger than 1 gets more accurately represented. Thus, this robust regression is more resilient to outliers with large scale residuals.
+

@@ -1,0 +1,214 @@
+---
+title: "MATH 423 - Assignment 3"
+author: "YUNHEUM DAN SEOL"
+date: '2017-11-15'
+output: pdf_document
+---
+
+```{r}
+#Reading the data
+cigs <- read.csv("http://www.math.mcgill.ca/yyang/regression/data/cigs.csv")
+summary(cigs)
+
+#Defining the variables
+y <- cigs$CO
+x1 <- cigs$TAR
+x2 <- cigs$NICOTINE
+x3 <- cigs$WEIGHT
+#Constructing the models
+fit.intercept <- lm(y~1)
+fit.cigs123 <- lm(y~x1+x2+x3)
+fit.cigs12 <- lm(y~x1+x2)
+fit.cigs1 <- lm(y~x1)
+fit.cigs23 <-lm(y~x2+x3)
+fit.cigs13 <- lm(y~x1+x3)
+
+#Summaries of each model
+
+summary(fit.intercept)
+summary(fit.cigs1)
+summary(fit.cigs12)
+summary(fit.cigs123)
+```
+```{r}
+library(scatterplot3d)
+#3d plot for fit.cigs12
+s3d<-scatterplot3d(x1,x2,y,pch=20,grid=FALSE,angle=20)
+s3d$plane3d(fit.cigs12,col="#3388dd")
+#3d plot for fit.cigs23
+s3d<-scatterplot3d(x2,x3,y,pch=20,grid=FALSE,angle=15)
+s3d$plane3d(fit.cigs23,col="orange")
+#3d plot for fit.cigs123
+s3d<-scatterplot3d(x1,x3,y,pch=20,grid=FALSE,angle=15)
+s3d$plane3d(fit.cigs13,col="purple")
+```
+
+#(a)
+From the notes we know 
+$$SS_{res}:=(n-p)\widehat\sigma^2=(n-p)*\widehat\sigma^2$$
+so for $SS_{res}(\beta_0,\beta_1,\beta_2,\beta_3)$
+$$SS_{res}(\beta_0,\beta_1,\beta_2,\beta_3)=(25-4)*1.445726^2 = 43.89259$$
+#(b)
+and
+$$SS_{res}(\beta_0,\beta_1,\beta_2)=(25-3)*(1.412524)^2=43.89494$$
+```{r}
+#Calculating SS_res for models
+
+SS_res_beta123 <- summary(fit.cigs123)$df[2]*summary(fit.cigs123)$sigma^2
+SS_res_beta123
+
+SS_res_beta12 <- summary(fit.cigs12)$df[2]*summary(fit.cigs12)$sigma^2
+SS_res_beta12
+  
+```
+Let us check whether those values coincide with the definition
+$$SS_{res}=\sum^n_{i=1}(y_i-\widehat y_i)^2$$
+
+```{r}
+fitted.beta123 <- fitted(fit.cigs123)
+SSresBeta123 <- sum((y-fitted.beta123)^2)
+SSresBeta123 
+
+fitted.beta12 <- fitted(fit.cigs12)
+SSresBeta12 <- sum((y-fitted.beta12)^2)
+SSresBeta12
+SS_res_beta123-SS_res_beta12
+```
+So our computation is correct. We should remark that the difference between $SS_{res}(\beta_0,\beta_1, \beta_2,\beta_3)$ and $SS_{res}(\beta_0,\beta_1,\beta_2)$ is very small. This might suggest the variation in predictor $x_{i3}$ might not explain the variation in y very
+#(c)
+The F test statistic for comparing the two models
+$$\mathrm{E}_{Y|X}[Y_i|\mathrm{x}_i]=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}\\\mathrm{E}_{Y|X}[Y_i|\mathrm{x}_i]=\beta_0 + \beta_1x_{i1}+\beta_2x_{i2}+\beta_3x_{i3}$$
+can be found as
+$$F=\frac{(SS_{Res}(\beta_0,\beta_1,\beta_2)-SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3))/r}{SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3)/(n-p)}=\frac{(SS_{Res}(\beta_0,\beta_1,\beta_2)-SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3))/1}{SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3)/(21)}$$
+$$\frac{(SS_{Res}(\beta_0,\beta_1,\beta_2)-SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3))/1}{SS_{Res}(\beta_0,\beta_1,\beta_2,\beta_3)/(21)}=\frac{(43.89494-43.89259)/1}{43.89259/21}=0.001127825$$
+```{r}
+partial.F.12<- anova(fit.cigs12)
+partial.F.123 <- anova(fit.cigs123)
+
+partial.F.123
+partial.F.12
+
+SSres012 <- partial.F.12[3,2]
+SSres123 <- partial.F.123[4,2]
+MSres123 <- partial.F.123[4,3]
+#Calculating F Statistic in two different ways
+F_1a <-(SSres012-SSres123)/(MSres123)
+
+#Comparing it with direct location of F Statistic
+F_1b <- partial.F.123[3,4]
+#Check whether they match
+F_1a
+F_1b
+
+#HYPOTHESIS TESTING AT ALPHA = 0.05
+qf(0.95, 1, 21) < F_1a
+```
+We can remark that our F-Statistic value is very small. If you perform a test of statistical hypothesis with hypotheses
+$$H_0:\beta_3=0\\H_a:\beta_3\neq0$$
+We would fail to reject our null hypothesis at $\alpha = 0.05$, so we have no sufficient evidence to claim that $x_{i3}$ is influential.
+So we would say the reduced model 
+$$\mathrm{E_{Y|X}}[Y_i|\mathrm{x}_i]=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}$$
+gives a better explanation than the full model.
+#(d) Our sums-of-squares decomposition would be done as below:
+$$\bar{SS}_{R}(\beta_1,\beta_2,\beta_3|\beta_0)_{(1)}=\bar {SS}_{R}(\beta_3|\beta_0)_{(2)}+\bar{SS}_{R}(\beta_2|\beta_3,\beta_0)_{(3)}+\hat {SS}_{R}(\beta_1|\beta_2,\beta_3,\beta_0)_{(4)}$$
+1:$$\bar{SS}_R(\beta_1,\beta_2,\beta_3|\beta_0)=\bar{SS}_R(\beta_1,\beta_2,\beta_3,\beta_0)-\bar{SS}_R(\beta_0)$$
+
+2:$$\bar{SS}_R(\beta_3|\beta_0)=\bar{SS}_R(\beta_3,\beta_0)-\bar{SS}_R(\beta_0)$$
+
+3:>
+$$\bar{SS}_R(\beta_2|\beta_3,\beta_0)=\bar{SS}_R(\beta_2,\beta_3,\beta_0)-\bar{SS}_R(\beta_3,\beta_0)$$
+
+4:>$$\bar{SS}_R(\beta_1|\beta_2,\beta_3,\beta_0)=\bar{SS}_R(\beta_1,\beta_2,\beta_3,\beta_0)-\bar{SS}_R(\beta_2,\beta_3,\beta_0)$$
+```{r}
+partial.F.321 <- anova(lm(y~x3+x2+x1))
+fitted.F.321 <- fitted(lm(y~x3+x2+x1))
+fitted.F.3 <- fitted(lm(y~x3))
+fitted.F.23 <- fitted(lm(y~x2+x3))
+fitted.F.0 <- fitted(lm(y~1))
+
+#Computing sums-of-squares using two different ways
+bar_SS_reg_321 <- sum(fitted.F.321^2)-sum(fitted.F.0^2)
+bar_SS_reg_3 <- sum(fitted.F.3^2) - sum(fitted.F.0^2)
+bar_SS_reg_23 <- sum(fitted.F.23^2) - sum(fitted.F.3^2)
+bar_SS_reg_132 <- sum(fitted.F.321^2)-sum(fitted.F.23^2)
+partial.F.321
+
+barSSreg1032 <- partial.F.321[3,2]
+barSSreg203 <- partial.F.321[2,2]
+barSSreg30 <- partial.F.321[1,2]
+barSSreg123 <- sum(c(barSSreg1032,barSSreg203, barSSreg30))
+
+#Check whether the answers match!
+c(bar_SS_reg_321, bar_SS_reg_3, bar_SS_reg_23, bar_SS_reg_132)
+c(barSSreg123, barSSreg30, barSSreg203, barSSreg1032)
+```
+We have computed that
+$$\bar{SS_R}(\beta_1,\beta_2,\beta_3|\beta_0)=495.25781$$
+$$\bar{SS_R}(\beta_3|\beta_0)=116.05651$$
+$$\bar{SS_R}(\beta_2|\beta_0,\beta_3)=346.19988$$
+$$\bar{SS_R}(\beta_1|\beta_0,\beta_3,\beta_2)=33.00142$$
+We can notice including $\beta_3$ and $\beta_1$ to the reduced model model$$\mathrm{E}_{Y|X}[Y_i|\mathrm{x}_i]=\beta_0+\beta_3x_{i3}$$ can explain the variation in response y better.
+
+#(e)
+$$\bar{SS}_{R}(\beta_1,\beta_2|\beta_0)_{(a)}=\bar{SS}_{R}(\beta_1|\beta_0)_{(b)}+\bar{SS}_{R}(\beta_2|\beta_0,\beta_1)_{(c)}$$
+a:$$\bar{SS}_{R}(\beta_1,\beta_2|\beta_0)=\bar{SS}_{R}(\beta_1,\beta_2,\beta_0)-\bar{SS}_{R}(\beta_0)$$
+b:$$\bar{SS}_{R}(\beta_1|\beta_0)=\bar{SS}_R(\beta_0,\beta_1)-\bar{SS}_{R}(\beta_0)$$
+c:$$\bar{SS}_{R}(\beta_2|\beta_0,\beta_1)=\bar{SS}_{R}(\beta_1,\beta_2,\beta_0)-\bar{SS}_R(\beta_0,\beta_1)$$
+```{r}
+partial.F.12
+bar_SS_reg12 <- sum(fitted(lm(y~x1+x2))^2) - sum(fitted.F.0^2)
+bar_SS_reg1 <- sum(fitted(lm(y~x1))^2) - sum(fitted.F.0^2)
+bar_SS_reg2 <- sum(fitted(lm(y~x1+x2))^2) - sum(fitted(lm(y~x1))^2) 
+barSSreg10 <- partial.F.12[1,2]
+barSSreg201 <- partial.F.12[2,2]
+barSSreg120 <- barSSreg10+barSSreg201
+c(bar_SS_reg12, bar_SS_reg1, bar_SS_reg2)
+c(barSSreg120,barSSreg10, barSSreg201)
+```
+
+$$\bar{SS_R}(\beta_1,\beta_2|\beta_0)=495.2554571$$
+$$\bar{SS_R}(\beta_1|\beta_0)=494.2813099$$
+$$\bar{SS_R}(\beta_2|\beta_0,\beta_1)= 0.9741472$$
+#(f)
+```{r}
+partial.F.1 <- anova(fit.cigs1)
+partial.F.1
+partial.F.12
+SSres01 <- partial.F.1[2,2]
+MSres012 <- partial.F.12[3,3]
+
+F_2a <- (SSres01-SSres012)/MSres012
+F_2b <- partial.F.12[2,4]
+F_2a
+F_2b
+qf(0.95, 1, 22) < F_2a
+```
+We know that $x_{i3}$ is not influential.
+Given a test of hypotheses $$H_0:\beta_2=0\\H_a:\beta_2\neq0$$,under $\alpha=0.05$ we can notice that our F value is smaller than $100*(1-\alpha)$% quantile with degrees of freedom 1 and 22, so we can conclude that there is no sufficient evidence to reject our null hypothesis.
+So we would say the reduced model
+$$\mathrm{E_{Y|X}}[Y_i|\mathrm{x}_i]=\beta_0+\beta_1x_{i1}$$
+is a better model than
+$$\mathrm{E_{Y|X}}[Y_i|\mathrm{x}_i]=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}$$
+
+#(g)
+```{r}
+partial.F.0 <- anova(fit.intercept)
+partial.F.0
+partial.F.12
+SSres0 <- partial.F.0[1,2]
+
+F3a <- (SSres0-SSres012)/MSres012
+F3b <- partial.F.12[1,4]+partial.F.12[2,4]
+F3a
+F3b
+qf(0.95, 1, 22) < F3a
+```
+Given hypothesis
+$$H_0:\beta_1=\beta_2=0\\H_a:\mathrm{At\ least\ one\ of\ \beta_j\ is\ not\ zero}\ _{j=1,2}$$
+under $\alpha=0.05$, we have sufficient evidence to reject our null hypothesis. Therefore we say the "full" model 
+$$\mathrm{E_{Y|X}}[Y_i|\mathrm{x}_i]=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}$$
+is better than the reduced model
+$$\mathrm{E_{Y|X}}[Y_i|\mathrm{x}_i]=\beta_0$$.
+
+
+

@@ -1,0 +1,365 @@
+---
+title: "Assignment 4 - 260677676"
+author: "YUNHEUM DAN SEOL"
+date: '2018-03-28'
+output: pdf_document
+---
+#A12
+##(a)
+```{r}
+miyi <- c(0,7,4,3,5,2,3,0,1,6,0,2,0,2,5,1,3,0,8,0,0,0,2,2)
+mi <- c(4,9,11,6,6,7,7,1,8,9,5,5,5,4,7,3,7,2,11,8,4,4,5,7)
+yi <- miyi/mi
+shooting <- data.frame(cbind(miyi,mi))
+fit_ML<-glm(yi~1, weights=mi, family=binomial(link="logit")) 
+summary(fit_ML)
+logLik(fit_ML)
+
+# Showing the intercept only model returns 
+#the same beta_0 as the sum of all counts divided by sum of all trials
+pi_hat <- sum(miyi)/sum(mi)
+log(pi_hat/(1-pi_hat)) 
+
+# Checking the evidence for overdispersion
+X_square <- sum((residuals(fit_ML, "pearson"))^2)
+phi_hat <- X_square/(24-1)
+phi_hat #Significantly larger than 1
+
+```
+
+There is clearly a considerable evidence suggesting the existence of overdispersion. This will not affect the value of $\widehat{\beta_0}$ yet it will give us incorrect standard error and we might end up selecting an overly complicated model (not particularly for this case, but once we add more predictors). Therefore, we cannot say the model fit the data well.
+
+##(b) 
+Let us try fitting the quasi-binomial model with inflated variance.
+
+```{r}
+#Quasi-likelihood model -inflated binomial variance
+fit_quasi_iv <- glm(yi ~ 1, weights = mi, family = quasi(link = "logit", variance = "mu(1-mu)"))
+summary(fit_quasi_iv) #QL inflated-variance approach
+```
+$\widehat{\beta_0}$,the estimator of our $\beta_0$, remains the same a s the binomial ML model.
+##(c)
+```{r}
+#Quasi-Likelihood (2) - correlated Bernoulli trials
+library(aod)
+
+fit_quasi_corr <- quasibin(cbind(miyi,mi-miyi) ~ 1, data=shooting)
+#You DON'T use the summary() command!
+fit_quasi_corr
+```
+Our $\widehat{\beta}_0$ slightly decreases, because the multiple of the binomial variance does not drop out of the quasi-likelihood equations.
+
+##(d)
+```{r}
+#Beta-binomial model
+library(VGAM)
+library(arm) # VGAM{logit(x,inverse=TRUE)} returned an error...
+fit_beta_binom <- vglm(cbind(miyi,mi-miyi) ~1,betabinomial(zero=2,irho=0.2051))
+fit_beta_binom
+invlogit(-1.3459497) #our estimate of rho
+```
+Our $\widehat{\beta}_0$ also changes (actually increases in magnitude)
+
+##(e)
+```{r}
+#checking the fits
+c1 <-coef(fit_ML)
+c2 <- coef(fit_quasi_iv)
+c3 <- coef(fit_quasi_corr)
+c4 <-coef(fit_beta_binom)
+
+s1 <-se.coef(fit_ML)
+s2 <-se.coef(fit_quasi_iv)
+fit_quasi_corr #0.2537
+s3 <-0.2537
+summary(fit_beta_binom) #0.2544
+s4 <- 0.2544
+c(c1,c2,c3,c4)
+c(s1,s2,s3,s4)
+```
+```{r}
+#Fitting the 95% confidence interval
+CI <- function(coef, se, alpha){
+  c(coef+qnorm(alpha/2)*se, coef+qnorm(1-alpha/2)*se)
+}
+#confidence interval or beta_0
+Beta_intervals <- rbind(c(1,CI(c1,s1,0.05)),c(2,CI(c2,s2,0.05)), c(3,CI(c3,s3, 0.05)), c(4,CI(c4[1],s4, 0.05)))
+Beta_intervals
+
+#Take e^x of them :  confidence interval for pi
+rbind(c(exp(CI(c1,s1,0.05))), c(exp(CI(c2,s2,0.05))), c(exp(CI(c3,s3, 0.05))),c(exp(CI(c4[1],s4, 0.05))))
+```
+Under repeated sampling, 95% of these intervals will capture the true $\beta_0$. when you take them as powers of exponent, we can properly interpret the respective confidence intervals.
+
+1. Under binomial ML model, we are 95% confident that the interval $(0.4504, 0.8790)= (e^{-0.7976}, e^{-0.1290})$ will capture the $\pi_i$, the true proportion. 
+We can conclude that his three-points shots made significantly varied from approximately 45% to almost 88%, agreeing to the commentators.
+
+
+2. Under inflated variance model, we are 95% confident that the interval $(0.3905, 1.014)=(e^{-0.9403},e^{0.013})$ captures the true proportion;however, we can see that this model does not fit the data well since $\pi_i \leq 1$
+
+
+3. Under Quasi-likelihood model with correlated trials, we are 95% confident that the interval $(0.3344, 0.9040)=(e^{-1.095},e^{-0.1009})$ will capture the true proportion.
+We can conclude that his three-points shots made dramatically varied from approximately 30% to almost 90%, agreeing to the commentators.
+
+4. Under beta-binomial model, we are 95% confident that the interval $(0.3260, 0.8836)=(e^{-1.1210},e^{-0.1237})$ will capture the true proportion
+We can conclude that his three-points shots made dramatically varied from approximately 30% to almost 88%, agreeing to the commentators.
+
+
+##(f)
+One possible source (factor) of overdispersion is when each Bernoulli trial is correlated (not independent) with common correlation $\rho$ between each pair of $\{y_i, y_j \}:\ i \neq j$
+In this situation, adjusting the quasi-likelihood function with adjusted mean-variance relationship 
+\[
+v(\pi_i) = [1+\rho(m_i-1)]\pi_i(1-\pi_i)/m_i\ |\rho|<1;
+\]
+is recommended; thus our quasi-binomial model under part (c) is something ideal to use.
+
+#A13
+```{r}
+#Importing dataset and cleaning it up
+library(readr)
+
+auto_FL <- read_csv("automobile_accident.csv")
+
+colnames(auto_FL)
+auto_FL$S <- as.factor(auto_FL$S)
+auto_FL$E <- as.factor(auto_FL$E)
+is.factor(auto_FL$S)
+is.factor(auto_FL$E)
+attach(auto_FL)
+```
+```{r}
+#Fitting the model S+E
+fit_FL <- glm(cbind(Fatal, Nonfatal)~S+E, family=binomial(link="logit"))
+summary(fit_FL)
+```
+```{r}
+#Fitted counts
+library(arm)
+b0 <- coef(fit_FL)[1]
+b1 <- coef(fit_FL)[2]
+b2 <- coef(fit_FL)[3]
+
+m1 <- c(1105,14)
+m2 <- c(411111,483)
+m3 <- c(4624, 497)
+m4 <- c(157342,1008)
+lp1 <- b0+b1+b2
+lp2 <- b0+b1
+lp3 <- b0+b2
+lp4 <- b0
+
+fitted1 <- c(sum(m1)*invlogit(lp1),sum(m1)*(1-invlogit(lp1)))
+fitted2 <- c(sum(m2)*invlogit(lp2),sum(m2)*(1-invlogit(lp2)))
+fitted3 <- c(sum(m3)*invlogit(lp3),sum(m3)*(1-invlogit(lp3)))
+fitted4 <- c(sum(m4)*invlogit(lp4),sum(m4)*(1-invlogit(lp4)))
+rbind(fitted1, fitted2, fitted3, fitted4)
+```
+```{r}
+#Testing the model
+OS <-unlist(Fatal)
+OF <- unlist(Nonfatal)
+FS <- c(fitted1[1],fitted2[1],fitted3[1],fitted4[1])
+FF <- c(fitted1[2],fitted2[2],fitted3[2],fitted4[2])
+ 
+#X^2
+ X <-c(0,0,0,0)
+for(i in 1:4){
+  X[i] <- ((OS[i]-FS[i])^2/FS[i] + (OF[i]-FF[i])^2/FF[i])
+}
+ X.square <-sum(X)
+ X.square
+#G^2 : Likelihood Ratio Test
+ G <- c(0,0,0,0)
+for(i in 1:4){
+  G[i] <- {(OS[i]*log(OS[i]/FS[i]))+(OF[i]*log(OF[i]/FF[i]))}
+}
+ G.square <- 2*sum(G)
+
+ G.square
+#Getting p-values
+pchisq(X.square, 1, lower.tail=FALSE)
+pchisq(G.square, 1, lower.tail=FALSE)
+
+```
+at $\alpha=0.05$ we fail to reject the null that the model is a good fit.
+Thus it does seem to be a good fit.
+##(b)
+If we have a logistic regression model, i.e.
+\[
+logit(\pi_i) = x_i\beta
+\]
+where
+\[
+\beta =  (\beta_0, \beta_1, ..., \beta_{p-1})
+\]
+
+then
+\[
+e^{\beta_j} = \frac{P(Y=1|x_j=1)/[1-P(Y=1|x_j=0)]}{P(Y=0|x_j=1)/P(Y=0|x_j=0)}
+\]
+
+would be our odds ratio
+```{r}
+#Preliminary setup
+##Odds ratios
+exp(b0)
+exp(b1)
+exp(b2)
+
+##Constructing confidence intervals for each beta
+se <-unlist(se.coef(fit_FL))
+se0 <- se[1]
+se1 <- se[2]
+se2 <- se[3]
+##Fitting the 95% confidence interval
+CI <- function(coef, se, alpha){
+  c(coef+qnorm(alpha/2)*se, coef+qnorm(1-alpha/2)*se)
+}
+rbind(CI(b0,se0,0.05), CI(b1,se1,0.05), CI(b2,se2,0.05))
+
+##confidence interval for odds ratios
+#first row - first interval
+#second row - second interval
+rbind(exp(CI(b0,se0,0.05)),exp(CI(b1,se1,0.05)),exp(CI(b2,se2,0.05)))
+c0 <-CI(b2,se2,0.05)
+c1 <- CI(b1,se1,0.05)
+c2 <- CI(b2,se2,0.05)
+
+```
+
+
+We are 95% confident that the first interval above will capture the true odds ratio for having a fatal injury once you have put on the seatbelt under repeated sampling. We can conclude that the odds of having a fatal injury decreases to approximately 20%  once you put on a seatbelt, and we are also 95% confident that the second interval will capture the true odds ratio for having a fatal injury once you get ejected. We can conclude that your odds to have a fatal injury can multiply from 14 times to 18 times once you get ejected in a car accident.
+The reason why we call the model S+E a homogeneous model can be deduced from what the other models assume concerning conditional independence.
+
+If we fit a model with only the intercept,
+
+\[ 
+Y \perp S, E
+\]
+or if we fit a model with only S or E, it assumes
+\[
+Y \perp E\\
+Y \perp S
+\]
+but once we fit S and E without the interaction, we assume both predictors are independent, thus assuming the odds ratios are irrespective to the factor levels.
+
+##(c)
+```{r}
+#Fitting the model with only E
+fit_E_FL <- glm(cbind(Fatal, Nonfatal)~E, family=binomial(link="logit"))
+summary(fit_E_FL)
+```
+```{r}
+
+b_ <- unlist(coef(fit_E_FL))
+b_0 <- b_[1]
+b_1 <- b_[2]
+#Odds ratios
+c(exp(b_0), exp(b_1))
+se_ <- unlist(se.coef(fit_E_FL))
+se_0 <- se_[1]
+se_1 <- se_[2]
+#Confidence intervals
+exp(CI(b_0,se_0,0.05))
+exp(CI(b_1,se_1,0.05))
+```
+```{r}
+#Assessing the model fit
+X.s <- sum(residuals(fit_E_FL, "pearson")^2)
+pchisq(X.s, 0.05, lower.tail=FALSE)
+anova(fit_E_FL) 
+1-pchisq(1144.6,2)
+```
+Our model with only E assumes conditional independence
+\[
+Y \perp S | E
+\]
+We can reject the null that there is no significant difference between our model and the observed data at $\alpha = 0.05$
+Thus we can conclude that it is not a good model.
+
+#A14
+```{r}
+#constructing data
+race <- c(1,1,0,0)
+gender <- c(1,0,1,0)
+y1 <- c(88,54,397,235)
+y2 <- c(16,7,141,189)
+y3 <- c(2,5,24,39)
+Heaven <- cbind(race,gender,y1,y2,y3)
+#adjusting gender and race to be factor variables
+race <- as.factor(race)
+gender <- as.factor(gender)
+#fitting the baseline category model
+library(nnet)
+f1 <- multinom(cbind(y3,y1,y2)~gender+race)
+summary(f1)
+cf <- coef(f1)
+cf
+cf[1,]-cf[2,]
+```
+From the code we can see that the prediction equations would be of the form below:
+\[
+log(\frac{\pi_{i1}}{\pi_{i3}}) = 1.794+1.034x_{i1}+0.6727x_{i2} 
+\]
+\[
+log(\frac{\pi_{i2}}{\pi_{i3}}) = 
+1.5308+0.03088x_{i1}-0.4757x_{i2}
+\]
+\[
+log(\frac{\pi_{i1}}{\pi_{i2}}) = log(\frac{\pi_{i1}}{\pi_{i3}}) - log(\frac{\pi_{i2}}{\pi_{i3}})
+= 0.2635+0.7252x_{i1}+1.1483x_{i2}
+\]
+
+##(b)
+```{r}
+#odds ratio between y1(yes) and y3
+exp(cf[1,2])
+#confidence interval for the odds ratio
+ste_gender <- 0.2587
+exp(CI(cf[1,2],ste_gender, 0.05))
+
+```
+We are 95% confident that our interval will capture the true odds ratio  under repeated sampling.
+We can conclude that the odds of saying "yes" to the survey gets multiplied at least 1.5 times up to approximately 4.7 times
+(i.e. Women are more likely to believe in heaven)
+
+##(c)
+The question suggests us to fit a model with only race as a predictor
+```{r}
+#fit the model
+f2 <-multinom(cbind(y3,y1,y2)~race)
+summary(f2)
+
+```
+```{r}
+#constructing likelihood-ratio test (deviance test)
+1-pchisq(deviance(f2), f2$edf)
+```
+Our likelihood-ratio based test suggests that there is a significant difference between the observations and our model.
+So we can conclude that our model is not a good fit.
+
+#A15
+
+  From textbook and class we know that if we set the cumulative log odds model accounting for the latent continuous variable $z_i$ for the subject i we make two assumptions:
+
+  Firstly, cumulative logit models are usually set for ordered data, so there exists a stochastic ordering:
+  If there are two predictors $x=u$, $x=v$ with response $y_i$
+  \[
+  P(y_i \leq j|x=u) \leq P(y_i \leq j|x=v)
+  \]
+  or vice versa.
+  Secondly, we assume $z_i = \vec{x}_i\vec{\beta}+\epsilon_i$ Provided that we have taken the logit model, we assume our $\epsilon_i$ to have a cdf of standard logistic distribution
+\[
+\epsilon_i \sim\ F_{\epsilon}(x)
+\]
+where 
+\[
+F_{\epsilon}(x) = \frac{e^{x}}{1+e^{x}}
+\] with constant variance since we make an attempt to fit a linear model for the latent variable. 
+If two groups have similar location but very different dispersion, in the model it is likely that the stochastic order between two predictors might no longer hold, resulting an issue against our assumption of constant variance(i.e. chance of heteroscedasticity).
+If the variance change with mean, our linear model for the latent variable is not really a good fit; the logit lines will not be parallel and will eventually cross, suggesting negative probabilities for some categories.
+Another point to mention is that when such cumulative log odds ratios were compared, we get
+\[
+logit(P(y_i \leq j|x=u)) - logit(P(y_i \leq j|x=v)) =(u-v)\beta
+\]
+and especially for binary predictors there will be a greater chance of u-v being zero, thus suggesting it could be more likely for the stochastic order to not hold.

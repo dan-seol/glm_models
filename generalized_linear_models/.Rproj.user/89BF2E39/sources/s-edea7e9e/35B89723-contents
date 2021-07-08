@@ -1,0 +1,460 @@
+---
+title: "Assignment 3 - MATH 523_260677676"
+author: "YUNHEUM DAN SEOL"
+date: '2018-03-13'
+output: pdf_document
+---
+#A8.
+##(a)
+\[
+\exists \{ y_{i1},\ y_{i2},\ ...,\ y_{i(ni-1)}, \forall i = 1,\ ...\ ,\ N
+\]
+
+\[
+\text{if }\ Y_{ij} \sim \text{Bernoulli}(\pi_i)\ 
+\] 
+
+i=1, ... , N and j=1, ..., n_i
+Then for each $y_{ij}$ we have probability mass function $p(y_{ij} ; \pi_i)$ as below:
+
+\[
+p(y_{ij} ; \pi_i) = \pi_{i}^{y_{ij}}(1- \pi_i)^{1-y_{ij}}
+\]
+
+so
+
+\[
+L(\beta) = \Pi_{i=1}^N\Pi_{j=1}^{n_i} \pi_i^{y_{ij}}(1-\pi_i)^{1-y_{ij}}
+\]
+
+\[
+= \Pi_{i=1}^N\pi_i^{\sum_{j=1}^N y_{ij}}(1-\pi_i)^{n_i-\sum_{j=1}^N y_{ij}}
+\]
+
+\[
+= \Pi_{i=1}^N\pi_i^{\sum_{j=1}^N y_{ij}}(1-\pi_i)^{n_i-\sum_{j=1}^N y_{ij}}
+\]
+
+Now, define $Y_i = \frac{\sum_{j=1}^{n_i}Y_{ij}}{n_i}$
+Then we have
+
+\[
+n_iY_i \sim \text{Binomial}(n_i, \pi_i)\ \ \text{i=1,...,N}
+\]
+
+with probability mass function
+
+\[
+p(n_iy_i; n_i, \pi_i) = \left( \begin{array}{c}
+n_i\\
+n_iy_i
+\end{array} \right)
+\pi_i^{n_iy_i}(1-\pi_i)^{n_i-n_iy_i}
+\]
+
+then 
+
+\[
+L(\beta) = \Pi_{i=1}^N\left( \begin{array}{c}
+n_i\\
+n_iy_i
+\end{array} \right)
+\pi_i^{n_iy_i}(1-\pi_i)^{n_i-n_iy_i}
+\]
+They share the kernel part since
+\[
+\Pi_{i=1}^N\pi_i^{n_iy_i}(1-\pi_i)^{n_i-n_iy_i} =\Pi_{i=1}^N \pi_i^{\sum_{j=1}^N y_{ij}}(1-\pi_i)^{n_i-\sum_{j=1}^N y_{ij}} 
+\]
+This implies that the parameter estimates for grouped and ungrouped data would be the same.
+
+##(b)
+For a glm we have the likelihood equation (score function)
+
+\[
+\frac{\partial l(\beta)}{\partial \beta_j} := \sum_{i=1}^n \frac{y_i-\mu_i}{Var(y_i)}\frac{\partial \mu_i}{\partial \eta_i}x_{ij} = 0
+\]
+
+\[
+\text{if }\ Y_{ij} \sim \text{Bernoulli}(\pi_i)
+\]
+
+i=1, ... , N and j=1, ..., n_i
+
+\[
+\mathrm{E}[Y_{ij}] = \pi_i
+\]
+
+\[
+\mathbb{VAR}[Y_{ij}] = \pi_i(1-\pi_i)
+\]
+
+so we have 
+\[
+\sum_{i=1}^N \sum_{j=1}^{n_i}\frac{y_ij-\pi_i}{\pi_i(1-\pi_i)}\frac{\partial \pi_i}{\partial \eta_i}x_{ij} =0
+\]
+
+\[
+n_iY_i \sim \text{Binomial}(n_i, \pi_i)\ \ \text{i=1,...,N}
+\]
+
+\[
+\mathrm{E}[Y_i] = \pi_i
+\]
+
+\[
+\sum_{i=1}^N\frac{n_i(y_i-\pi_i)}{\pi_i(1-\pi_i)}\frac{\partial \pi_i}{\partial \eta_i}x_{ij} =0
+\]
+
+\[
+\mathbb{VAR}[Y_i] = \frac{\pi_i(1-\pi_i)}{n_i}
+\]
+
+\[
+\sum_{i=1}^N \sum_{j=1}^{n_i}\frac{y_i-\pi_i}{\pi_i(1-\pi_i)}\frac{\partial \pi_i}{\partial \eta_i}x_{ij} =0
+\]
+It is known from class that
+For saturated models we have $y_i = \widehat{\mu_i}$ 
+The difference of the number of parameters (for binomial responses we have N $\widehat{\mu_i} = y_i$'s, whereas for for bernoulli  responses we have n = $\sum_{i=1}^Nn_i$ ) results a difference in likelihood equations. 
+##(c)
+```{r}
+#grouped data
+x <- c(0,1,3)
+trials <- c(3,4,5)
+successes <-c(1,2,4)
+failures <- trials-successes
+p <- successes/trials
+grouped <- data.frame(cbind(successes,x))
+f0a <- glm(cbind(successes, failures)~1, family=binomial, data=grouped)
+f1a <- glm(cbind(successes, failures)~x, family=binomial, data=grouped)
+
+y_u <- c(1,0,0,1,1,0,0,1,1,1,1,0)
+x_u <- c(0,0,0,1,1,1,1,3,3,3,3,3)
+ungrouped <- data.frame(cbind(y_u,x_u))
+f0b <- glm(cbind(y_u, 1-y_u)~1, family=binomial, data=ungrouped)
+f1b <- glm(cbind(y_u, 1-y_u)~x_u, family=binomial, data=ungrouped)
+#incercept-only model:summary for the grouped data
+summary(f0a)
+#intercept-only mode: summary for the ungrouped data
+summary(f0b)
+#model with x: summary for the grouped data
+summary(f1a)
+#model with x: summary for the ungrouped data
+summary(f1b)
+
+#comparing the fitted values for M1: they are the same
+coefficients(f1a)
+coefficients(f1b)
+
+#comparing the deviances for M1: they are NOT the same!
+deviance(f1a)
+deviance(f1b)
+
+#comparing the differences between the M0 and M1:
+deviance(f0a) - deviance(f1a)
+deviance(f0b) - deviance(f1b)
+
+```
+
+
+
+Our response is a bernoulli random variable (i.e. $Y_i \sim \text{ Bernoulli}(\pi_i)$) thus discrete. The innate discreteness of response is, therefore, the reason why the residuals do not behave similar to normal random variables. This non-normal behavior of residual points explains the evident linear patterns in our both residual plots. 
+
+We can elaborate on this. From class we learned that when we have a binary response the deviance becomes just the function of $\beta$. Not only this gives us difficulty to use deviance as a measure for Goodness-of-fit test, but also is a reason of linear pattern.
+(b)
+```{r}
+set.seed(329)
+x1 <-runif(100, min=0, max=1)
+```
+#A9.
+(a)
+```{r}
+library(Rlab)
+set.seed(329)
+x1 <-runif(100, min=0, max=1)
+pi <- exp(-2+0.4*x1)/(exp(-2+0.4*x1)+1)
+head(x1)
+head(pi)
+y <- rbern(100, pi)
+logistic1 <- glm(y~x1, family=binomial)
+summary(logistic1)
+
+b1 <- -2
+b2 <- 0.4
+
+
+pi <- lapply(x1, function(i){exp(-2 + 0.4*i)/(1 + exp(-2 + 0.4*i))}) 
+vec <- c()
+for (i in 1:100){
+
+  y<- c(vec,sample(0:1, 1, prob = c(1-unlist(pi)[i], unlist(pi)[i]))) }
+
+pi <- unlist(pi)
+
+r1.pearson <- residuals(logistic1,"pearson")
+
+r1.deviance <- residuals(logistic1,"deviance")
+eta <- predict(logistic1,type="link") 
+par(mfrow=c(1,2)) 
+plot(r1.pearson~eta,main="Residual:Pearson", pch=25)
+x2 = seq(-3.2,-0.8, length =201)
+y2 = lapply(x2, FUN =function(x) exp(-x/2))
+lines(x2, y2, lty="solid", lwd=1, col='magenta')
+x3 = seq(-3.2,-0.8, length =201)
+y3 = lapply(x3, FUN =function(x){ (-(exp(x))/sqrt(exp(x)))}) 
+lines(x3,y3, lty="solid", lwd=1, col= 'red')
+plot(r1.deviance~eta,main="Residual:deviance", pch=39)
+xa = seq(-3.2,-0.8, length =201)
+ya = lapply(xa, FUN =function(x) -sqrt(2*log(1+exp(x))))
+lines(xa, ya, lty="solid", lwd=1, col='blue')
+xb = seq(-3.2,-0.8, length =201)
+yb = lapply(xb, FUN =function(x){sqrt(-2*log(exp(x)/(1+exp(x))))}) 
+lines(xb,yb, lty="solid", lwd=1, col= 'red')
+```
+##(b)
+```{r}
+Duplicate <- function(m,N,a,b) {
+x  <- runif(m,a,b)
+pi = exp(-2+0.4*x)/(1+exp(-2+0.4*x)) 
+dev <- rep(NA,N)
+for (i in 1:N)
+{
+bern = rbern(m,pi)
+model = glm(bern~x,family=binomial)
+ 
+dev[i] = deviance(model) }
+  #histogram  for 1000 samples of hundreds
+hist(dev,prob=TRUE)
+  #pdf of chi-squared distribution
+lines(min(dev):max(dev), dchisq( min(dev):max(dev),df=m-2 ) ) }
+Duplicate(100, 1000, 0, 1)
+```
+It is known that as n increases a binomial random variable (i.e. sum of independent Bernoulli random variables) the histogram (probability mass function) would look closer to a normal random variable by the Central Limit Theorem. Nevertheless, the responses are binary, so the deviance histogram would not look different from $\chi^2_{98}$ distribution.
+
+##(c)
+
+```{r}
+Duplicate(1000,1000,0,1)
+```
+The histogram of deviance even looks closer to the normal distribution, yet the density of $\chi^2$ distribution started deviating from looking closer to that of normal.
+
+
+
+#A10.
+For a logistic regression, the model formulae would be
+\[
+\pi_i = exp(\sum_{j=1}^{p}\beta_jx_{ij}) \iff ln(\frac{\pi_i}{1-\pi_i})=\sum_{j=1}^p\beta_jx_{ij}
+\]
+
+We have 
+
+\[
+x = \text{age}
+\]
+
+\[Y=
+\begin{cases}
+1 \text{ if using facebook}\\
+0 \text{ if not using facebook}
+\end{cases}
+\]
+
+and 
+\[
+0.8 < P(Y=1|x=18) < 0.9 \implies ln(\frac{0.8}{0.2})=ln(4) < logit(P(Y=1|x=18)) <ln(\frac{0.9}{0.1})=ln(9)
+\]
+Likewise, we have
+\[
+0.2 < P(Y=1|x=65) < 0.3 \implies ln(\frac{0.2}{0.8})=ln(\frac{1}{4})<logit(P(Y=1|x=65))<ln(\frac{0.3}{0.7})
+\]
+It follows that
+\[
+-ln(9) < -logit(P(Y=1|x=18)) < - ln(4)
+\]
+\[
+ln(\frac{1}{4})<logit(P(Y=1|x=65))<ln(\frac{0.3}{0.7})
+\]
+implying
+\[
+ln(\frac{1}{4})+ln(\frac{1}{9})<logit(P(Y=1|x=65)-logit(P(Y=1|x=18)) < ln(\frac{3}{7})+ln(\frac{1}{4})
+\]
+Since we know 
+\[
+logit(P(Y=1|x=65)-logit(P(Y=1|x=18)) = (65-18)\beta_j = 47 \beta_j
+\]
+\[
+ln(\frac{1}{4})+ln(\frac{1}{9})<47\beta_j< ln(\frac{3}{7})+ln(\frac{1}{4})
+\]
+```{r}
+round(c(log(1/4)+log(1/9), log(3/7)+log(1/4)),2)
+```
+\[
+\implies -3.58 < 47\beta_j < -2.23 \implies -3.58/47 < \beta_j < -2.23/47
+\]
+
+```{r}
+round(c((log(1/4)+log(1/9))/47, (log(3/7)+log(1/4))/47),3)
+```
+so
+\[
+= -0.076 < \beta_j < -0.048
+\]
+#A11.
+```{r}
+wells <- read.table("wells.dat")
+attach(wells)
+dist100 <- dist/100
+head(wells)
+dim(wells)
+```
+```{r}
+#binning dist/100(distance in 100m units to the closest known safe well) into 20 categories
+#and computing the proportion of households that switched the well
+ncat <- 20
+bins <- cut(dist100, quantile(dist100, prob=c(0:ncat)/ncat), include.lowest=TRUE)
+households <- split(switch, bins)
+par(mfrow=c(1,2))
+logits <- as.numeric(lapply(households,FUN=function(x){log((sum(x)+0.5)/(length(x)-sum(x)+0.5))})) 
+props <- as.numeric(lapply(households,FUN=function(x){sum(x)/length(x)}))
+households.means <- as.numeric(lapply(split(dist/100, bins),mean))
+plot(households.means, logits, pch=20)
+plot(households.means, props, pch=20, col="red")
+```
+
+```{r}
+fit1 <- glm(cbind(switch, 1-switch)~dist100, family='binomial')
+summary(fit1)
+anova(fit1)
+sum(residuals(fit1, types = "pearson")^2)
+sum(residuals(fit1, types="deviance")^2)
+beta <- coefficients(fit1)
+prob <- exp(beta[1]+sort(dist100)*beta[2])/(1+exp(beta[1]+sort(dist100)*beta[2]))
+plot(households.means, logits, pch=20)
+lines(sort(dist100),beta[1]+beta[2]*sort(dist100))
+plot(households.means, props, pch=20, col="red")
+lines(sort(dist100),prob,col="red")
+```
+
+```{r}
+# Checking the fit of m1 by means of formal goodness of fit tests
+
+observed <- lapply(households,FUN=function(x){c(sum(x),length(x)-sum(x))})
+
+observed <- matrix(as.numeric(unlist(observed)),ncol=2,byrow=TRUE)
+
+fitted <- lapply(split(dist100,bins),FUN=function(x){pi <- exp(beta[1]+x*beta[2])/(1+exp(beta[1]+x*beta[2])); c(sum(pi),sum(1-pi)) } )
+
+fitted <- matrix(as.numeric(unlist(fitted)),ncol=2,byrow=TRUE)
+
+X.2  <- sum(((observed-fitted)^2)/fitted)
+
+
+G.2 <- 2*sum(observed*log(observed/fitted))
+
+pchisq(X.2, df=18,lower.tail=FALSE)
+
+pchisq(G.2, df=18,lower.tail=FALSE)
+```
+We can conclude at $\alpha = 0.05$ level that there is significant evidence against the null that that there is a significant difference between the expected frequencies and observed frequencies in at least one category
+
+(b)
+```{r}
+fit_a <- glm(cbind(switch, 1-switch)~(dist100+arsenic+educ+assoc)^2, family = binomial)
+summary(fit_a)
+anova(fit_a)
+anova(fit1, fit_a)
+drop1(fit_a, test="Chisq") #deviance
+drop1(fit_a, test="LRT") #LRT for comparison
+fit_b <- update(fit_a, ~.-dist100:arsenic-dist100:assoc-arsenic:educ-arsenic:assoc-educ:assoc)
+```
+```{r}
+summary(fit_b)
+anova(fit_b)
+drop1(fit_b, test="Chisq")
+drop1(fit_b, test="LRT")
+fit_c <-update(fit_b, ~.-assoc)
+```
+```{r}
+summary(fit_c)
+anova(fit_c)
+drop1(fit_c, test="Chisq")
+drop1(fit_c, test="LRT")
+fit_d <- update(fit_c, ~.-educ-dist100:educ)
+```
+```{r}
+summary(fit_d)
+anova(fit_d)
+```
+
+It seems that the logistic model with dist in 100 m units and level of arsenic contamination explains the variation in response (switch) most adequately.
+The distance has a predicted coefficient less than 0 whereas the level of arsenic contamination returns a positive coefficient, so we can say that one unit arsenic level increase brings approximately a multiplicative $e^{0.461}$ level of increase in odds and every 100m the well gets further the odds of switching the well increase by a multiplicative factor of $e^{-0.89}$.
+
+It follows that the probability of switching well decreases once the well gets further but it increases as the well gets to have a higher level of arsenic. We can notice that since $|-0.89| > |0.46|$ distance plays a bigger role for people when it comes to deciding whether to switch the well or not.
+
+Model c (fit_c) with education and and the interaction between the distance and the education gives a better fit actually, but I decided to choose model d thinking of the intepretation's sake (What significant effect would a college degree have on motivating people to walk more to choose the well for their households? If you were to get educated enough in such a town, would it not mean the household is wealthy enough to purchase water? Furthermore, if education indeed a predictor that has an effect on $\beta_{dist100}$, why would eduation itself would be not significant predictor? )
+
+(c)
+We use the functions that were provided from class:
+```{r}
+# Computing sensitivity and specificity
+pred1 <- predict(fit1, type = "response")
+pred_d <- predict(fit_d, type = "response")
+pred_c <- predict(fit_c, type = "response")#For comparison
+
+sens.spec <- function(y,pred,p=0.5){
+	y.hat <- as.numeric(pred>p)
+	tmp <- cbind(y,y.hat)
+	I1 <- as.numeric(y==1)
+	I2 <- as.numeric(y.hat==1)
+	a <- sum(I1*I2)
+	b <- sum(I1*(1-I2))
+	c <- sum((1-I1)*I2)
+	d <- sum((1-I1)*(1-I2))
+	sens <- a/(a+b)
+	spec <- d/(c+d)
+	observed <- factor(c("Y=1","Y=1","Y=0","Y=0"),levels=c("Y=1","Y=0"))
+	fitted <- factor(c("Y.hat=1","Y.hat=0","Y.hat=1","Y.hat=0"),levels=c("Y.hat=1","Y.hat=0"))
+	print(xtabs(c(a,b,c,d)~observed+fitted))
+	return(list(c(sensitivity=sens,specificity=spec)))
+}
+
+sens.spec(switch,pred1)
+sens.spec(switch,pred_d)
+
+# Computing the ROC curve
+
+roc.curve <- function(y,pred){
+	p <- seq(from=0,to=1,by=0.01)
+	out <- matrix(ncol=2,nrow=length(p))
+	for(i in 1:length(p)){
+	y.hat <- as.numeric(pred>p[i])
+	tmp <- cbind(y,y.hat)
+	I1 <- as.numeric(y==1)
+	I2 <- as.numeric(y.hat==1)
+	a <- sum(I1*I2)
+	b <- sum(I1*(1-I2))
+	c <- sum((1-I1)*I2)
+	d <- sum((1-I1)*(1-I2))
+	sens <- a/(a+b)
+	spec <- d/(c+d)
+	out[i,1] <- 1-spec
+	out[i,2] <- sens
+	}
+	out  
+}
+roc.f1 <- roc.curve(switch,pred1)
+roc.f_d <- roc.curve(switch,pred_d)
+roc.f_c <- roc.curve(switch, pred_c)
+
+plot(roc.f1,type="l",xlab="x",ylab="y",main="ROC curves for Bangladesh home-wells",col="red")
+lines(roc.f_d,col="blue")
+lines(roc.f_c,col = "orange")
+lines(c(0,1),c(0,1),lty=3)
+```
+
+We can conclude that the model with arsenic level and distance is a certainly better one.
+
+
+
+
+
+

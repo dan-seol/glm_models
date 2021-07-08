@@ -1,0 +1,280 @@
+---
+title: "Assignment 2 MATH 523"
+author: "YUNHEUM DAN SEOL"
+date: '2018-02-19'
+output: pdf_document
+---
+#A5
+Given a Gamma GLM, we deal with response that has a conditional distribution
+
+$$f(y|\alpha, \beta_i)=\begin{cases}\frac{\beta^\alpha}{\Gamma(\alpha)}y^{\alpha-1}e^(-\beta y);\ y>0\\ 0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ y\leq0\end{cases}$$
+then we know
+$$\mathbb{E}[Y_i]=\frac{\alpha}{\beta}\ \ \ \mathbb{VAR}[Y_i]=\frac{\alpha}{\beta^2}$$
+and from class we know 
+$$I(\beta) = \mathbb{X}^{\intercal}W\mathbb{X}=[I_{jk}]$$ where $$
+I_{jk} = \sum_{i=1}^n(x_{ij}(\frac{(\frac{\partial\mu_i}{\partial\eta_i})^2x_{ik}}{\mathrm{Var}[Y_i]})$$
+$$W = \mathrm{diag}[W_1, ... , W_n];\ \ W_i = \frac{(\frac{\partial\mu_i}{\partial\eta_i})^2}{\mathrm{Var}[Y_i]} = \frac{\beta^2}{\alpha(g^\prime(\mu_i))^2}$$
+
+$$I(\beta)= \begin{bmatrix} 1 & ... & ... & 1 \\ x_1 & ... & ... & x_n \end{bmatrix}\begin{bmatrix} W_1 & 0 & ... & 0 \\ 0 & W_2 & ... & 0 \\ 0 & ... & ... & 0\\ 0 & ... & ... & W_n \end{bmatrix} \begin{bmatrix} 1 & x_1\\ 1&x_2\\ ...&...\\1&x_n \\\end{bmatrix}
+$$
+
+$$= \begin{bmatrix}\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}&\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i\\ \frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i&\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2\end{bmatrix}$$
+
+for an arbitrary link
+
+when the canonical link is used, i.e. 
+$$g(\mu_i) = \frac{1}{\mu_i}; g^\prime(\mu_i)=-\frac{1}{\mu_i^2}\implies(\frac{1}{g^\prime(\mu_i)})^2=\mu_i^4 = \frac{\alpha^4}{\beta_i^4}$$ 
+Our expected information matrix gets to be simplified as
+$$\begin{bmatrix}\alpha^3\sum_{i=1}^n\frac{1}{\beta_i^2}&\alpha^3\sum_{i=1}^n\frac{x_i}{\beta_i^2}\\ \alpha^3\sum_{i=1}^n\frac{x_i}{\beta_i^2}&\alpha^3\sum_{i=1}^n\frac{x_i^2}{\beta_i^2}\end{bmatrix}=\begin{bmatrix}\alpha\sum_{i=1}^n\mu_i^2&\alpha\sum_{i=1}^n\mu_i^2x_i\\ \alpha\sum_{i=1}^n\mu_i^2x_i&\alpha\sum_{i=1}^n\mu_i^2x_i^2\end{bmatrix}$$
+##(b)
+From class, we know $$\widehat{\beta} \sim_{app} \mathit{N}(\beta, {I(\beta)}^{-1})$$ as $$n \to \infty$$
+Therefore once we find the variance-covariance matrix ${I(\beta)}^{-1}$ The asymptotic variances will be its diagonal entries.
+
+$$\begin{bmatrix}\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}&\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i\\ \frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i&\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2\end{bmatrix}^{-1}$$
+$$ = \frac{1}{(\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2})(\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2)-(\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i)^2}
+\begin{bmatrix}\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i^2&-\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i\\ -\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i&\frac{1}{\alpha}\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}\end{bmatrix}$$
+$$
+=\frac{\alpha^2}{(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2})(\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2)-(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i)^2}\frac{1}{\alpha}\begin{bmatrix}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i^2&-\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i\\ -\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i&\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}\end{bmatrix}$$
+$$=\frac{\alpha}{(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2})(\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2)-(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i)^2}\begin{bmatrix}\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i^2&-\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i\\ -\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i&\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}\end{bmatrix}$$
+Since we have acquired the variance-covariance matrix, thus
+$$\mathbb{Var}[\widehat{\beta_0}]=\frac{\alpha\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i^2}{(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2})(\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2)-(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i)^2}$$
+$$\mathbb{Var}[\widehat{\beta_1}]=\frac{\alpha\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}}{(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2})(\sum_{i=1}^n\frac{\beta^2_i}{g^\prime(\mu_i)^2}x_i^2)-(\sum_{i=1}^n\frac{\beta_i^2}{g^\prime(\mu_i)^2}x_i)^2}$$
+
+If you use canonical link,
+$$\begin{bmatrix}\alpha\sum_{i=1}^n\mu_i^2&\alpha\sum_{i=1}^n\mu_i^2x_i\\ \alpha\sum_{i=1}^n\mu_i^2x_i&\alpha\sum_{i=1}^n\mu_i^2x_i^2\end{bmatrix}^{-1}=\frac{\alpha}{(\alpha\sum_{i=1}^n\mu_i^2)(\alpha\sum_{i=1}^n\mu_i^2x_i^2)-(\alpha\sum_{i=1}^n\mu_i^2x_i)^2}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix}$$
+$$=\frac{\alpha}{\alpha^2[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix}$$
+$$=\frac{1}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix}$$
+and
+$$\mathbb{VAR}[\widehat{\beta_0}]=\frac{\sum_{i=1}^n\mu_i^2x_i^2}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}$$
+$$\mathbb{VAR}[\widehat{\beta_1}]=\frac{\sum_{i=1}^n\mu_i^2}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}$$
+
+##(c)
+It is analogous to the setting of A2, thus we can classify our data into two groups such that
+$$x_i=\begin{cases}1 \ \mathrm{if}\ i=1, ...,n_A \\ 0\ \mathrm{if}\ i =n_A+1, ... ,n_A+n_B=n\end{cases}$$
+From class, we know
+$$\widehat{\beta}=(\mathbb{X^{\intercal}}W\mathbb{X})^{-1}\mathbb{X^{\intercal}}W\mathrm{Y}$$ where
+$$\mathbb{X^{\intercal}}W\mathrm{Y}=\begin{bmatrix} 1 & ... & ... & 1 \\ x_1 & ... & ... & x_n \end{bmatrix}\begin{bmatrix} W_1 & 0 & ... & 0 \\ 0 & W_2 & ... & 0 \\ 0 & ... & ... & 0\\ 0 & ... & ... & W_n \end{bmatrix} \begin{bmatrix} y_1\\ y_2\\ ...\\y_n \\\end{bmatrix}=\begin{bmatrix}\alpha\sum_{i=1}^n\mu_i^2y_i\\\alpha\sum_{i=1}^n\mu_i^2x_iy_i\end{bmatrix}$$
+$$=\alpha\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^n\mu_i^2x_iy_i\end{bmatrix}$$
+$$\implies(\mathbb{X^{\intercal}}W\mathbb{X})^{-1}\mathbb{X^{\intercal}}W\mathrm{Y}=$$
+$$=\frac{1}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix} \alpha\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^n\mu_i^2x_iy_i\end{bmatrix}$$
+$$=\frac{\alpha}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^n\mu_i^2x_iy_i\end{bmatrix}$$
+$$\frac{1}{[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}\begin{bmatrix}\sum_{i=1}^n\mu_i^2x_i^2&-\sum_{i=1}^n\mu_i^2x_i\\ -\sum_{i=1}^n\mu_i^2x_i&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^n\mu_i^2x_iy_i\end{bmatrix}$$
+under our setting, this is equivalent to
+$$\frac{1}{[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)-(\sum_{i=1}^{n_A}\mu_i^2)^2]}\begin{bmatrix}\sum_{i=1}^{n_A}\mu_i^2&-\sum_{i=1}^{n_A}\mu_i^2\\ -\sum_{i=1}^{n_A}\mu_i^2&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^{n_A}\mu_i^2y_i\end{bmatrix}$$
+$$=\frac{1}{[(\sum_{i=1}^{n_A}\mu_i^2+\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)-(\sum_{i=1}^{n_A}\mu_i^2)^2]}\begin{bmatrix}\sum_{i=1}^{n_A}\mu_i^2&-\sum_{i=1}^{n_A}\mu_i^2\\ -\sum_{i=1}^{n_A}\mu_i^2&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^{n_A}\mu_i^2y_i\end{bmatrix}$$
+$$=\frac{1}{[(\sum_{i=1}^{n_A}\mu_i^2+\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2-\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}\sum_{i=1}^{n_A}\mu_i^2&-\sum_{i=1}^{n_A}\mu_i^2\\ -\sum_{i=1}^{n_A}\mu_i^2&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^{n_A}\mu_i^2y_i\end{bmatrix}$$
+$$=\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}\sum_{i=1}^{n_A}\mu_i^2&-\sum_{i=1}^{n_A}\mu_i^2\\ -\sum_{i=1}^{n_A}\mu_i^2&\sum_{i=1}^n\mu_i^2\end{bmatrix}\begin{bmatrix}\sum_{i=1}^n\mu_i^2y_i\\\sum_{i=1}^{n_A}\mu_i^2y_i\end{bmatrix}$$
+$$\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^n\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\\ (-\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^n\mu_i^2y_i)+(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\end{bmatrix}$$
+
+$$\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^n\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\\ (-\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i+\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)+(\sum_{i=1}^{n_A}\mu_i^2+\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\end{bmatrix}$$
+$$\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^n\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\\ (-\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)+(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\end{bmatrix}$$
+$$\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^n\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)\\ (\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)\end{bmatrix}$$
+$$=\frac{1}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\begin{bmatrix}(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2y_i)\\ (\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)-(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)\end{bmatrix}$$
+$$=\begin{bmatrix}\frac{(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\\ \frac{(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}-\frac{(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)]}\end{bmatrix}$$
+$$=\begin{bmatrix}\frac{(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)]}\\ \frac{(\sum_{i=1}^{n_A}\mu_i^2y_i)}{[(\sum_{i=1}^{n_A}\mu_i^2)]}-\frac{(\sum_{i=n_A}^{n_A+n_B}\mu_i^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)]}\end{bmatrix}$$
+from A2 we know that we can estimate group means as below
+$$\widehat{\mu_A}=\bar{y_A}=\frac{1}{n_A}\sum_{i=1}^{n_A}y_i$$
+$$\widehat{\mu_B}=\bar{y_B}=\frac{1}{n_B}\sum_{i=n_A+1}^{n_A+n_B}y_i$$
+so our $\beta$ can be estimated as
+$$\begin{bmatrix}\frac{(\sum_{i=n_A+1}^{n_A+n_B}\bar{y_B}^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\bar{y_B}^2)]}\\ \frac{(\sum_{i=1}^{n_A}\bar{y_A}^2y_i)}{[(\sum_{i=1}^{n_A}\bar{y_A}^2)]}-\frac{(\sum_{i=n_A}^{n_A+n_B}\bar{y_B}^2y_i)}{[(\sum_{i=n_A+1}^{n_A+n_B}\bar{y_B}^2)]}\end{bmatrix}=\begin{bmatrix}(\sum_{i=n_A+1}^{n_A+n_B}y_i)\\ (\sum_{i=1}^{n_A}y_i)-(\sum_{i=n_A+1}^{n_A+n_B}y_i)\end{bmatrix}$$
+And they will have variance
+$$\mathbb{VAR}[\widehat{\beta_0}]=\frac{\sum_{i=1}^{n_A}\mu_i^2}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^{n_A}\mu_i^2)-(\sum_{i=1}^{n_A+n_B}\mu_i^2)]}=\frac{\sum_{i=1}^{n_A}\mu_i^2}{\alpha(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)}=\frac{1}{\alpha(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)}$$
+$$\mathbb{VAR}[\widehat{\beta_1}]=\frac{\sum_{i=1}^n\mu_i^2}{\alpha[(\sum_{i=1}^n\mu_i^2)(\sum_{i=1}^n\mu_i^2x_i^2)-(\sum_{i=1}^n\mu_i^2x_i)^2]}=\frac{\sum_{i=1}^{n}\mu_i^2}{\alpha(\sum_{i=1}^{n_A}\mu_i^2)(\sum_{i=n_A+1}^{n_A+n_B}\mu_i^2)}$$
+##(d)
+if you use the log link
+$$g(\mu_i)=ln(\mu_i) \implies g^\prime(\mu_i) = \frac{1}{\mu_i}\implies \frac{1}{g^\prime(\mu_i)}=\mu_i$$
+$$W_i=\frac{\beta^2}{\alpha(g^\prime(\mu_i))^2}=\frac{\beta^2}{\alpha}*\mu_i^2=\frac{\beta^2}{\alpha}*\frac{\alpha^2}{\beta^2} = \alpha$$
+Thus
+$$W = \alpha I$$ where $I$ is the n*n identity matrix.
+so our $\widehat{\beta}$ would be 
+$$\widehat{\beta}=(\mathbb{X^{\intercal}}W\mathbb{X})^{-1}\mathbb{X^{\intercal}}W\mathrm{Y}$$ where 
+$$(\mathbb{X^{\intercal}}W\mathbb{X})^{-1}=[\alpha(\mathbb{X^{\intercal}}I\mathbb{X})]^{-1}=[\alpha(\mathbb{X^{\intercal}}\mathbb{X})]^{-1}=\frac{1}{\alpha}\begin{bmatrix}n&n_A\\n_A&n_A\end{bmatrix}^{-1}=\frac{1}{\alpha}\begin{bmatrix}n_A&-n_A\\-n_A&n\end{bmatrix}$$
+ and
+$$\mathbb{X^{\intercal}}W\mathrm{Y}=\alpha\mathbb{X^{\intercal}}\mathrm{Y}=\alpha\begin{bmatrix}\sum_{i=1}^ny_i\\ \sum_{i=1}^{n_A}y_i\end{bmatrix}$$
+then
+$$\widehat{\beta}=\begin{bmatrix}n_A&-n_A\\-n_A&n\end{bmatrix}\begin{bmatrix}\sum_{i=1}^ny_i\\ \sum_{i=1}^{n_A}y_i\end{bmatrix}=\begin{bmatrix}n_A\sum_{i=1}^ny_i-n_A\sum_{i=1}^{n_A}y_i\\-n_A\sum_{i=1}^ny_i+n\sum_{i=1}^{n_A}y_i\end{bmatrix}=\begin{bmatrix}n_A\sum_{i=n_A+1}^ny_i\\n_B\sum_{i=1}^{n_A}y_i-n_A\sum_{i=n_A+1}^ny_i\end{bmatrix}$$
+##(e)
+Deviance for $$Y_i\sim \Gamma(\alpha, \beta)$$ with $Y_i$ independent
+We know the formula for deviance for GLM of data distributed according to a pdf in exponential dispersion family(without weight) is
+
+$$D(y,\bar{\mu})=2\sum_{i=1}^n\{y_i\tilde{\theta_i}-y_i\widehat{\theta_i}-b(\tilde{\theta_i})+b(\widehat{\theta_i})\}$$
+where $$\theta = -\frac{1}{\mu},\ \ b(\theta)=ln(\mu)$$
+At saturated model $\tilde{\theta_i}=-\frac{1}{y_i}$
+whereas in the model with p parameters we have $\widehat{\theta_i}=-\frac{1}{\widehat{\mu_i}}$
+so the deviance would be
+$$D(y,\bar{\mu})=2\sum_{i=1}^n\{-(y_i)\frac{1}{y_i}+\frac{y_i}{\widehat{\mu_i}}-ln(\frac{1}{y_i})+ln(\frac{1}{\widehat{\mu_i}})\}=2\sum_{i=1}^n\{\frac{y_i}{\widehat{\mu_i}}-1+ln(\frac{y_i}{\widehat{\mu_i}})\}$$
+##(f)
+Pearson residual:
+$$r_{_pi}=\frac{r_i}{\sqrt{v(\mu_i)}}=\frac{y_i-\widehat{\mu_i}}{\sqrt{v(\mu_i)}}$$. For a Gamma GLM, we have 
+$$\mu_i = \frac{\alpha}{\beta_i}, \mathbb{VAR}[Y_i]=\frac{\alpha}{\beta_i^2}, a(\phi) = \frac{1}{\alpha}$$
+Since 
+$$\mathbb{VAR}[Y_i]=a(\phi)v(\mu_i)=\frac{1}{\alpha}v(\mu_i) \implies v(\mu_i)=\alpha\mathbb{VAR}[Y_i] = \frac{\alpha^2}{\beta_i^2}=\mu_i^2$$
+So our pearson residual would be of the form
+$$\frac{y_i-\widehat{\mu_i}}{\sqrt{v(\mu_i)}}=\frac{y_i-\widehat{\mu_i}}{\sqrt{\widehat{\mu_i}^2}}=\frac{y_i-\widehat{\mu_i}}{\widehat{\mu_i}}$$
+Anscombe residual:
+$$r_{_Ai}=\frac{A(y_i)-A(\widehat{\mu_i})}{\sqrt{\{A^{\prime}(\mu_i)\}^2\ v(\mu_i)}}$$ where
+$$A(y)=\int^y_0\frac{1}{(v(\mu))^{\frac{1}{3}}}d\mu=\int^y_0\frac{1}{(\mu^2)^\frac{1}{3}}d\mu=\int^y_0\mu^{\frac{-2}{3}}d\mu = 3\mu^{\frac{1}{3}}\rvert^y_0=3y^{\frac{1}{3}}$$
+So our residual would be$$\frac{A(y_i)-A(\widehat{\mu_i})}{\sqrt{\{A^{\prime}(\mu_i)\}^2\ v(\mu_i)}}=\frac{3y_i^{\frac{1}{3}}-3\widehat{\mu_i}^{\frac{1}{3}}}{\sqrt{(\frac{d}{d\mu_i}3\widehat{\mu_i^{\frac{1}{3})^2}\widehat{\mu_i}^2}}}=\frac{3y_i^{\frac{1}{3}}-3\widehat{\mu_i}^{\frac{1}{3}}}{\sqrt{(\widehat{\mu_i^{\frac{-2}{3}})^2}\widehat{\mu_i}^2}}=\frac{3y_i^{\frac{1}{3}}-3\widehat{\mu_i}^{\frac{1}{3}}}{\sqrt{\widehat{\mu_i}^{\frac{2}{3}}}}$$
+$$=\frac{3y_i^{\frac{1}{3}}-3\widehat{\mu_i}^{\frac{1}{3}}}{\widehat{\mu_i}^{\frac{1}{3}}}$$
+Deviance Residual
+$$r_{di}=\sqrt{2\omega_i(y_i(\tilde{\theta}_i-\widehat{\theta}_i)-b(\tilde{\theta_i})+b(\widehat{\theta_i})}=\sqrt{2(\frac{y_i}{\widehat{\mu_i}}-1+ln(\frac{y_i}{\widehat{\mu_i}}))}sgn(y_i-\widehat{\mu_i})$$
+#A6
+(canonical link assumed)
+Since for normal GLM, $$\theta = \mu;\ \  b(\theta)=\frac{\mu^2}{2}$$
+The deviance for the normal GLM would be
+$$D(y, \widehat{\mu})=2\sum_{i=1}^n(y_i(y_i-\widehat{\mu_i})-\frac{y_i^2}{2}+\frac{\widehat{\mu_i}^2}{2})=\sum^{n}_{i=1}(y_i^2-2y_i\widehat{\mu_i}+\widehat{\mu_i}^2)$$
+$$=\sum_{i=1}^n(y_i-\widehat{\mu_i})^2$$
+So if we take the difference of deviances, it would be of the form
+$$D(y,\tilde{\mu})-D(y, \widehat{\mu})=\sum_{i=1}^n(y_i-\tilde{\mu_i})^2-\sum_{i=1}^n(y_i-\widehat{\mu}_i)^2=SS_{res}(\beta_0)-SS_{res}(\beta_1)$$ 
+This is analogous to the difference between residual sum-of-squares used for model selection that we used in Classical Linear Regression.
+It helps us to choose a better model by using F test, using the statistics
+$$\frac{[SS_{res}(\beta_0)-SS_{res}(\beta_1)]/(p_1-p_0)}{SS_{res}/(n-p_1)} \sim Fisher-F_{p_1-p_0,n-p_1}$$
+#A7
+```{r}
+library(glmbb)
+
+data(crabs)
+
+##the response is satell
+head(crabs)
+summary(crabs)
+dim(crabs)
+#figure out what the data consists of
+attach(crabs)
+pairs(cbind(satell,weight,color))
+
+```
+##(a)
+```{r}
+
+
+#linear model for comparison
+lmfit_1 <- lm(satell~(weight+color)^2)
+summary(lmfit_1)
+```
+```{r}
+
+#The responses are in discrete integers, so let's try poisson
+mod1 <- glm(satell~(weight+factor(color))^2, family = poisson(link="log"))
+summary(mod1)
+```
+
+##(b)
+```{r}
+# Fisher information at the last iteration
+
+
+I <- (t(model.matrix(mod1))%*%diag(mod1$weights))%*%model.matrix(mod1)
+
+
+
+# Inverse Fisher information matrix (i.e. as. covariance matrix of the MLEs)
+
+I.inv <- solve(I)
+dim(I.inv)
+
+# standard errors of the MLEs
+
+sd <- sqrt(diag(I.inv))
+beta <- coefficients(mod1)
+
+
+p.val <- pchisq((beta/sd)^2,df=1,lower.tail=FALSE)
+round(p.val,7)
+
+```
+Against the null hypothesis that the interaction of colorlvl and weight is not significant, we reject the null at $\alpha=0.05$ and conclude that we have sufficient evidence to conclude that the interaction factor is significant, except for the color level "darker."
+It seems that the interaction between weight and color is significant.
+
+##(c)
+```{r}
+# Checking the fit of the model using the deviance statistic
+# Fitting other models 
+modb <- glm(satell~weight+factor(color), family=poisson(link=log))
+modc <- glm(satell~weight, family=poisson(link=log))
+modd <- glm(satell~factor(color), family=poisson(link=log))
+anova(mod1)
+deviance(modb)
+deviance(modc)
+
+# The saturated model v. our model
+pchisq(deviance(mod1), df=169, lower.tail=FALSE)
+# The model with interaction v. the model without interaction
+pchisq((deviance(modb)-deviance(mod1)),df=1,lower.tail=FALSE)
+# The saturated model v. the model without interaction
+pchisq(deviance(modb), df=170, lower.tail=FALSE)
+# The model with one predictor only
+## weight only v. proposed model
+pchisq((deviance(modc)-deviance(mod1)), df=2, lower.tail = FALSE)
+
+## color level only v. proposed model
+pchisq((deviance(modd)-deviance(mod1)), df=2, lower.tail = FALSE)
+
+
+
+
+```
+Under our null hypothesis that the nested model is an adequate simplification of the full model with more predictors, we get different results:
+
+###Model without the interaction v. model with interaction
+We fail to reject the null hypothesis at $\alpha=0.05$, and we conclude that we have failed to have sufficient evidence that the model with interaction explains the variation in response better.
+###Other cases
+We can reject our null hypothesis at $\alpha=0.05$, and we conclude that the saturated model might be a better fit. 
+
+
+
+
+
+##(d)
+
+We can try the "darker" factor level to the "dark" level (the base model)  --
+```{r}
+color_mod <- color
+for(i in 1:length(color_mod)){
+  if(color_mod[i] == "darker")
+    color_mod[i] = "dark"
+}
+mod2 <- glm(satell~(weight+factor(color_mod))^2, family=poisson(link=log))
+summary(mod2)
+
+
+
+```
+From the visual inspection of the table we can conclude that all of the predictors are significant.
+##(e)
+```{r}
+# Next, compute the Pearson residuals (these are NOT the standardized residuals)
+
+r.pearson <- residuals(mod2,"pearson")
+
+# Next, compute the deviance residuals
+
+r.deviance <- residuals(mod2,"deviance")
+par(mfrow=c(1,2))
+
+plot(r.pearson~predict(mod2,type='link'), xlab=expression(hat(eta)), ylab="Pearson residuals", pch=19, col = 'red')
+plot(r.deviance~predict(mod2,type="link"),xlab=expression(hat(eta)), ylab="Deviance residuals",pch=19, col='blue')
+
+
+# The saturated model v. the model without interaction
+deviance(mod2)
+deviance(mod1)
+pchisq(deviance(mod2), df=167, lower.tail=FALSE)
+pchisq(deviance(mod2)-deviance(mod1), df=1, lower.tail=FALSE)
+```
+
+The residual plot gets closer to a null plot if the approximate normality is assumed for the response.
+Even if the other pieces of evidence suggest that the model is a     good fit, it is really hard to make a correct judgment based on the residual plot and deviance only since Poisson-distributed random variables do not necessarily behave normally when the mean is not large. That explains some evident "pattern" in our residual plot.
+
+For the deviance test, against the null hypothesis that the simpler model is a better model compared to the saturated model, we reject the null at $\alpha = 0.05$ and claim to  have gathered sufficient evidence against the null and say the saturated model might fit the model better.
+However, among the test between models mod1 and mod2, mod2 can explain the variation in response certainly better.
+
+
+
+
+
+
+
+
+
+

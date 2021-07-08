@@ -1,0 +1,666 @@
+---
+title: "MATH 523 Assignment 5 - 260677676"
+author: "Dan Yunheum Seol"
+date: '2018-04-27'
+output: pdf_document
+---
+#A16 Load the data "BritishDoctors.txt", available on MyCourses under Assignments:
+```{r}
+BD <- read.table("BritishDoctors.txt", header=TRUE)
+head(BD)
+list(summary(BD),dim(BD))
+BD
+```
+
+##(a)
+```{r}
+#constructing a naive model
+
+n <- sum(person)
+
+logperson <- log(person)
+fit1.BD<- glm(deaths ~ factor(smoking)+factor(age), family = poisson, offset = logperson)
+summary(fit1.BD)
+#checking the fit - something's weird...
+pchisq(deviance(fit1.BD), df = 4, lower.tail =  F)
+```
+```{r}
+plot(residuals(fit1.BD, "deviance")~predict(fit1.BD), xlab = expression(hat(eta)), ylab = "deviance residuals", pch=20)
+abline(0,0, col = "green")
+```
+
+This main-effects Poisson model is constructed under the assumption
+\[
+y_{ij}/p_{ij} = exp(\beta_0 + \beta_{i}^A + \beta_{j}^S)
+\]
+or equivalently
+\[
+log(y_{ij}/p_{ij}) =\beta_0 + \beta_{i}^A + \beta_{j}^S 
+\] 
+for $i= 1,\ ... ,\ 4$ and $j = 1,\ 2$
+where $\beta_i^A$ denotes the effect by age,  $\beta_j^S$ the effect by smoking with restriction
+$\beta_1^A = \beta_1^S = 0$
+We can show that this model assumes a constant ratio of nonsmokers to smokers coronary death rates over age since this model assumes mutual independence
+$Smoking \perp Age.$
+
+we have 
+\[
+log(\lambda_{i1}/p_{i1}) =\beta_0 + \beta_{i}^A + \beta_{1}^S 
+\] and
+\[
+log(\lambda_{i2}/p_{i2}) =\beta_0 + \beta_{i}^A + \beta_{2}^S 
+\] 
+\[
+log(\lambda_{i2}/p_{i2})-log(\lambda_{i1}/p_{i1})=
+\]
+\[
+(\beta_0 + \beta_{i}^A + \beta_{2}^S) - (\beta_0 + \beta_{i}^A + \beta_{1}^S) 
+\]
+\[
+= \beta_{2}^S - \beta_{1}^S = \beta_{2}^S
+\]
+but since
+\[
+log(y_{i2}/p_{i2})-log(y_{i1}/p_{i1}) = log(\frac{y_{i2}/p_{i2}}{y_{i1}/p_{i1}})
+\]
+so we have
+\[
+log(\frac{y_{i2}/p_{i2}}{y_{i1}/p_{i1}}) = \beta_{2}^S\ \ \forall i
+\]
+```{r}
+#To create a contingency table
+BDtab_obs <- xtabs(deaths/person~factor(age)+factor(smoking))
+BDtab_obs
+```
+```{r}
+BDtab_fitted <- xtabs(predict(fit1.BD, type = "response")/person~factor(age)+factor(smoking))
+BDtab_fitted
+```
+```{r}
+#observed log ratios for smoking
+log(deaths[6:10]/person[6:10])-log(deaths[1:5]/person[1:5]) 
+exp(log(deaths[6:10]/person[6:10])-log(deaths[1:5]/person[1:5]))
+#fitted log ratios for smoking - constant
+log(predict(fit1.BD, type = "response")[6:10]/person[6:10]) - log(predict(fit1.BD, type = "response")[1:5]/person[1:5]) 
+exp(log(predict(fit1.BD, type = "response")[6:10]/person[6:10]) - log(predict(fit1.BD, type = "response")[1:5]/person[1:5]) )
+```
+The observed log ratios between smokers and nonsmokers show a decreasing tendency over age: it shows that the effect of smoking gets less pronounced on the death rates over age.
+
+##(b)
+We can add an interaction term, setting the model as 
+\[
+log(y_{ij}/p_{ij}) =\beta_0 + \beta_{i}^A + \beta_{j}^S+ \beta_{ij}^{AS} 
+\]
+$\beta_{i1}^{AS}= 0$
+then we would have
+\[
+log(\frac{y_{i2}/p_{i2}}{y_{i1}/p_{i1}}) = \beta_{2}^S+\beta_{i2}^{AS}\ \ \forall i
+\]
+```{r}
+#fitting the model with interaction
+fit2.BD<- glm(deaths ~ factor(smoking)*factor(age), family = poisson, offset = logperson)
+summary(fit2.BD)
+```
+Remark how representative the model is especially when it comes to demonstrating the decreasing effect of smoking over age.
+but it is the saturated model, so using qualitative interaction term would not really help.
+This is why adopting a quantitative interaction term would be a good alternative.
+\[
+log(\lambda_{ij}/p_{ij}) =\beta_0 + \beta x_i^A + \beta_{j}^S+ \gamma_jx_i 
+\]
+```{r}
+age.score <- rep(c(39.5, 49.5,59.5,69.5,79.5), 2)
+fit3.BD<- glm(deaths ~ age.score*smoking, family = poisson, offset = logperson)
+summary(fit3.BD)
+```
+```{r}
+pchisq(deviance(fit3.BD), df=6, lower.tail = F)
+```
+from AIC and deviance test we can conclude that this is a worse model compared to our $\texttt{fit1.BD}$ and $\texttt{fit2.BD}$
+Remark
+\[
+log(y_{(i+1)2}/p_{(i+1)2})-log(y_{i1}/p_{i1})  =\beta_0 + \beta x_{i+1}^A + \beta_{j}^S+ \gamma_jx_{i+1} -(\beta_0 + \beta x_i^A + \beta_{j}^S+ \gamma_jx_i) 
+\]
+\[
+(\beta+\gamma_j)(x_{i+1}-x_i) = (\beta+\gamma_j)(10)
+\]
+it does not depend on the age
+```{r}
+BDtabs_fitted2 <- xtabs(predict(fit3.BD, type = "response")/person ~ factor(age)+factor(smoking))
+BDtabs_fitted2
+```
+```{r}
+rbind(BDtabs_fitted2[2,]/BDtabs_fitted2[1,], BDtabs_fitted2[3,]/BDtabs_fitted2[2,], BDtabs_fitted2[4,]/BDtabs_fitted2[3,], BDtabs_fitted2[5,]/BDtabs_fitted2[4,])
+
+#vs the observed
+rbind(BDtab_obs[2,]/BDtab_obs[1,], BDtab_obs[3,]/BDtab_obs[2,], BDtab_obs[4,]/BDtab_obs[3,], BDtab_obs[5,]/BDtab_obs[4,])
+
+```
+So we can conclude that there is a lack of fit.
+
+How could we improve this model?
+```{r}
+#make only the interaction quantitative - introduce a new quantity
+inter <- age.score*c(0,0,0,0,0,1,1,1,1,1)
+fit4.BD<- glm(deaths ~ factor(age)+factor(smoking)+inter, family = poisson, offset = logperson)
+summary(fit4.BD)
+```
+It sets the model as 
+\[
+log(y_{ij}/p_{ij}) =\beta_0 + \beta_{i}^A + \beta_{j}^S+ \gamma_j x_i 
+\]
+so we would have
+\[
+log(y_{i2}/p_{i2}) - log(y_{i1}/p_{i1}) = \beta_2^S + (\gamma_2-\gamma_1)x_i = 
+\]
+\[
+= \beta_2^S + \gamma_2x_i
+\]
+So it depends on the age. For consecutive age groups,
+\[
+log(y_{(i+1)j}/p_{(i+1)j}) - log(y_{ij}/p_{ij}) = \beta_{i+1}^A-\beta_{i}^A +\gamma_j(x_{i+1}-x_i) = \beta_{i+1}^A-\beta_{i}^A + 10 \gamma_j
+\]
+The model is not saturated since it has 7 parameters
+
+```{r}
+BDtabs_fitted3 <- xtabs(predict(fit4.BD, type = "response")/person ~ factor(age)+factor(smoking))
+BDtabs_fitted3
+BDtab_obs
+```
+```{r}
+rbind(BDtab_obs[2,]/BDtab_obs[1,], BDtab_obs[3,]/BDtab_obs[2,], BDtab_obs[4,]/BDtab_obs[3,], BDtab_obs[5,]/BDtab_obs[4,])
+```
+```{r}
+rbind(BDtabs_fitted3[2,]/BDtabs_fitted3[1,], BDtabs_fitted3[3,]/BDtabs_fitted3[2,], BDtabs_fitted3[4,]/BDtabs_fitted3[3,], BDtabs_fitted3[5,]/BDtabs_fitted3[4,])
+```
+
+#A18
+```{r}
+library(readr)
+auto_FL <- read_csv("automobile_accident.csv")
+
+colnames(auto_FL)
+auto_FL$S <- as.factor(auto_FL$S)
+auto_FL$E <- as.factor(auto_FL$E)
+is.factor(auto_FL$S)
+is.factor(auto_FL$E)
+attach(auto_FL)
+```
+```{r}
+FL_tab <- xtabs(Fatal/(Nonfatal+Fatal)~S+E)
+FL_tab
+auto_FL[1][1]
+auto_FL[2][1]
+auto_FL[3][1]
+auto_FL[4][1]
+Y <- c(1105,411111,4624,157342,14,483,497,1008)
+isFatal <- c(0,0,0,0,1,1,1,1)
+Ejected<- c(1,0,1,0,1,0,1,0)
+Belt <- c(1,1,0,0,1,1,0,0)
+```
+```{r}
+fit0.FL <- glm(Y~1, family=poisson)
+fit1.FL <- glm(Y~isFatal,family=poisson)
+fit2.FL <- glm(Y~Ejected,family=poisson)
+fit3.FL <- glm(Y~Belt,family=poisson)
+fit4.FL <- glm(Y~isFatal+Ejected,family=poisson)
+fit5.FL <- glm(Y~isFatal+Belt,family=poisson)
+fit6.FL <- glm(Y~Ejected+Belt,family=poisson)
+fit7.FL <- glm(Y~isFatal+Ejected+Belt,family=poisson)
+fit8.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Ejected,family=poisson)
+fit9.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Belt,family=poisson)
+fit10.FL <- glm(Y~isFatal+Ejected+Belt+Ejected:isFatal,family=poisson)
+fit11.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Ejected+isFatal:Belt,family=poisson)
+fit12.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Ejected+Ejected:Belt,family=poisson)
+fit13.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Belt+Ejected:Belt,family=poisson)
+fit14.FL <- glm(Y~isFatal+Ejected+Belt+isFatal:Ejected+isFatal:Belt+Ejected:Belt,family=poisson)
+fit15.FL <- glm(Y~isFatal*Ejected*Belt,family=poisson)
+```
+```{r}
+anova(fit15.FL, fit14.FL, test= "Chi")
+anova(fit15.FL, fit13.FL, test= "Chi")
+anova(fit15.FL, fit12.FL, test= "Chi")
+anova(fit15.FL, fit11.FL, test= "Chi")
+```
+```{r}
+anova(fit14.FL, fit10.FL, test="Chi")
+anova(fit14.FL, fit9.FL, test="Chi")
+anova(fit14.FL, fit8.FL, test="Chi")
+anova(fit14.FL, fit7.FL, test="Chi")
+```
+Seemingly $\texttt{fit14.FL}$ -- the homogeneous association model is the one we can trust the most. Let's interpret the homogeneous association log linear model :
+```{r}
+summary(fit5.FL)
+```
+
+```{r}
+summary(fit14.FL)
+```
+##(b)
+```{r}
+coefs.FL <- summary(fit14.FL)$coefficients[,1:2]
+coefs.FL
+```
+
+The model is built on the assumption
+\[
+log(\mu_{ijk}) = \lambda_0 + \lambda_{i}^F + \lambda_{j}^E + \lambda_{k}^B + \lambda_{ij}^{FE} + \lambda_{ik}^{FB} + \lambda_{jk}^{EB}
+\] 
+under the assumption
+\[
+\lambda_{1}^F = \lambda_{1}^E = \lambda_{1}^B = 0
+\]
+and 
+\[
+\lambda_{11}^{FE} = \lambda_{11}^{FB} = \lambda_{11}^{EB} = 0
+\]
+then we will have 
+\[
+log(\mu_{111}) = \lambda_0
+\]
+\[
+log(\mu_{i11}) = \lambda_0+\lambda_{i}^F
+\]
+\[
+log(\mu_{1j1}) = \lambda_0+\lambda_{j}^E
+\]
+\[
+log(\mu_{11k}) = \lambda_0+\lambda_{k}^B
+\]
+\[
+log(\mu_{ij1}) = \lambda_0+\lambda_{i}^F+\lambda_{j}^E+\lambda_{ij}^{FE}
+\]
+\[
+log(\mu_{i1k}) = \lambda_0+\lambda_{i}^F+\lambda_{k}^B+\lambda_{ij}^{FB}
+\]
+\[
+log(\mu_{1jk}) = \lambda_0+\lambda_{j}^E+\lambda_{k}^B+\lambda_{jk}^{EB}
+\]
+
+thus we would have 
+\[
+log(\mu_{ij1})-log(\mu_{i11}) - log(\mu_{1j1})+log(\mu_{111}) = 
+\]
+\[
+\lambda_0+\lambda_{i}^F+\lambda_{j}^E+\lambda_{ij}^{FE}-(\lambda_0+\lambda_{i}^F)
+\]
+\[
+-(\lambda_0+\lambda_{j}^E)+\lambda_0
+\]
+\[
+\lambda_{j}^E+\lambda_{ij}^{FE}-(\lambda_0+\lambda_{j}^E)+\lambda_0
+\]
+\[
+\lambda_{ij}^{FE}
+\]
+thus we have 
+\[
+log(\frac{\mu_{ij1}\mu_{111}}{\mu_{i11}\mu_{1j1}}) = \lambda_{ij}^{FE}
+\]
+particularly, since under homogeneous association model
+\[
+log(\frac{\mu_{ij2}\mu_{112}}{\mu_{i12}\mu_{1j2}}) =\lambda_{ij}^{FE}
+\]
+so it follows that
+\[
+log(\frac{\mu_{22k}\mu_{11k}}{\mu_{21k}\mu_{12k}}) =\lambda_{22}^{FE} = 2.79779
+\]
+\[\implies e^{\lambda_{22}^{FE}} = 16.40834 \]
+We can interpret this as following: the odds of having a fatal injury is about 16 times higher when the passengers get ejected compared the odds of having such an injury when you did not.
+
+Likewise, we would have
+\[
+log(\mu_{1jk})-log(\mu_{1j1}) - log(\mu_{11k})+log(\mu_{111}) = 
+\]
+\[
+\lambda_0++\lambda_{j}^E+\lambda_{k}^B+\lambda_{jk}^{EB}-(\lambda_0+\lambda_{j}^E)
+\]
+\[
+-(\lambda_0+\lambda_{k}^B)+\lambda_0 = \lambda_{jk}^{EB}
+\]
+so
+\[
+log(\frac{\mu_{1jk}\mu_{111}}{\mu_{1j1}\mu_{11k}})  = \lambda_{jk}^{EB}
+\]
+especially because of homogeneous association
+\[
+log(\frac{\mu_{2jk}\mu_{211}}{\mu_{2j1}\mu_{21k}}) =  \lambda_{jk}^{EB}
+\]
+then it follows that 
+\[
+log(\frac{\mu_{122}\mu_{111}}{\mu_{121}\mu_{112}})  = \lambda_{22}^{EB} = -2.3996357
+\]
+\[
+\implies log(\frac{\mu_{121}\mu_{112}}{\mu_{122}\mu_{111}}) = 0.09075101  \implies \frac{\mu_{121}\mu_{112}}{\mu_{122}\mu_{111}} = 11.01916
+\]
+The odds of being ejected is 11 times higher when you did not wear a seatbelt.
+
+
+Analogously,
+\[
+log(\mu_{i1k})-log(\mu_{i11}) - log(\mu_{11k})+log(\mu_{111}) = 
+\]
+\[
+\lambda_0++\lambda_{i}^F+\lambda_{k}^B+\lambda_{ik}^{FE}-(\lambda_0+\lambda_{i}^F)
+\]
+\[
+-(\lambda_0+\lambda_{k}^B)+\lambda_0 = \lambda_{ik}^{FE}
+\]
+so
+\[
+log(\frac{\mu_{i1k}\mu_{111}}{\mu_{i11}\mu_{11k}})  = \lambda_{ik}^{FB}
+\]
+especially because of homogeneous association
+\[
+log(\frac{\mu_{i2k}\mu_{121}}{\mu_{i21}\mu_{12k}}) =  \lambda_{ik}^{FB}
+\]
+then it follows that 
+\[
+log(\frac{\mu_{212}\mu_{111}}{\mu_{221}\mu_{112}})  = \lambda_{22}^{FB} = 
+ = -1.7173207
+\]
+\[
+\implies \frac{\mu_{212}\mu_{111}}{\mu_{211}\mu_{112}} = 1.7173  \implies \frac{\mu_{211}\mu_{112}}{\mu_{212}\mu_{111}}= 5.569471
+\]
+We can interpret the odds ratio as following:
+We conclude that the odds of having a fatal accident is about 5.6 times higher when you did not wear a seatbelt.
+
+It would be adequate to calculate their confidence intervals at this point:
+\[
+\lambda_{22}^{FE} = 2.79779
+\]
+\[
+\lambda_{22}^{EB} = -2.3996357
+\]
+\[
+\lambda_{22}^{FB} = 
+ = -1.7173207
+\]
+```{r}
+coefs.FL
+```
+
+```{r}
+lambda_FE <- c(coefs.FL[5,1] -(coefs.FL[5,2]*qnorm(0.975)),coefs.FL[5,1] +(coefs.FL[5,2]*qnorm(0.975)))
+lambda_FB <- c(coefs.FL[6,1] +(coefs.FL[6,2]*qnorm(0.975)),coefs.FL[6,1] -(coefs.FL[6,2]*qnorm(0.975)))
+lambda_EB <- c(coefs.FL[7,1] +(coefs.FL[7,2]*qnorm(0.975)),coefs.FL[7,1] -(coefs.FL[7,2]*qnorm(0.975)))
+
+lambda <- rbind(exp(lambda_FE), exp(-lambda_FB), exp(-lambda_EB))
+lambda
+
+```
+##(c)
+Gini's dissimilarity index
+\[
+\hat{\Delta} = \sum_{i,j,k}\frac{|y_{ijk}-\mu_{ijk}|}{2y_{+++}}
+\]
+We would need to calculate $y_{+++}$ first.
+```{r}
+y.ppp <- sum(Y)
+num14 <- abs(Y-predict(fit14.FL, type = "response"))
+num13 <- abs(Y-predict(fit13.FL, type = "response"))
+num12 <- abs(Y-predict(fit12.FL, type = "response"))
+num11 <- abs(Y-predict(fit11.FL, type = "response"))
+num10 <- abs(Y-predict(fit10.FL, type = "response"))
+num9 <- abs(Y-predict(fit9.FL, type = "response"))
+num8 <- abs(Y-predict(fit8.FL, type = "response"))
+num7 <- abs(Y-predict(fit7.FL, type = "response"))
+round(c(sum(num14)/(2*y.ppp),sum(num13)/(2*y.ppp),sum(num12)/(2*y.ppp),sum(num11)/(2*y.ppp),sum(num10)/(2*y.ppp),sum(num9)/(2*y.ppp),sum(num8)/(2*y.ppp),sum(num7)/(2*y.ppp)), digits = 6)
+```
+We conclude that the homogeneous association model surpasses all the other models concerning its fit.
+##(e)
+The loglinear model and the logistic model return the same estimates and SE's, yet the loglinear model discusses about the association between S and E.
+
+#A19
+```{r}
+Homicide <- read.table("Homicides.dat", header=TRUE)
+head(Homicide)
+summary(Homicide)
+dim(Homicide)
+attach(Homicide)
+```
+```{r}
+fit1.HMC <- glm(count~race, family=poisson)
+summary(fit1.HMC)
+pchisq(844,71, df=1306, lower.tail = FALSE)
+```
+The model is built under the assumption
+\[
+log(\mu_i) = \lambda_0 + \lambda_1^{R} \mathbb{1}
+\]
+
+thus 
+\[
+log(\mu_0) =  \lambda_0 \implies \mu_0 = exp(\lambda_0) = exp(-2.38321) = 0.09225
+\]
+and
+\[
+log(\mu_1) = \lambda_0 + \lambda_1  = exp(\lambda_0+\lambda_1) = exp(-0.65007)  = 0.5220092
+\]
+```{r}
+mean_white <- mean(count[race==0])
+mean_black <- mean(count[race==1])
+var_white <- var(count[race==0])
+var_black <- var(count[race==1])
+c(mean_white, mean_black, var_white, var_black)
+```
+for both black and white people it is the case where the variance is significantly greater than the mean. It can be an indicator suggesting overdispersion. One reason behind this could be the fact that this is a zero-inflated data.
+
+Our predicted probability of a white person never seeing a homicide would be
+\[
+exp(-\mu_0)\frac{\mu_0^0}{0!} = exp(-\mu_0) = exp(-0.09225) = 0.9118772
+\]
+compared to the observed proportion
+```{r}
+sum(count[race==0]==0)/length(count[race==0]==0)
+```
+whereas our predicted probability of a black person never seeing a homicide
+\[
+exp(-\mu_1)\frac{\mu_1^0}{0!} = exp(-\mu_1) = exp(-0.5220092) = 0.5933272
+\]
+```{r}
+sum(count[race==1]==0)/length(count[race==1]==0)
+```
+
+Another source of overdispersion is the innate heterogeneity of the data (e.g. socioeconomic status, neighborhood dwelling, family history, etc.).
+
+##(c)
+Negative binomial GLM
+```{r}
+library(MASS)
+fit1_nb.HMC <- glm.nb(count~race, link = log)
+summary(fit1_nb.HMC)
+coef.HMC <-summary(fit1.HMC)$coefficients[1:2]
+coef_nb.HMC <-summary(fit1_nb.HMC)$coefficients[1:2]
+```
+```{r}
+coef_nb.HMC
+
+exp(coef_nb.HMC[1])+(exp(coef_nb.HMC[1])^2)/0.2023
+exp(coef_nb.HMC[1]+coef_nb.HMC[2])+(exp(coef_nb.HMC[1]+coef_nb.HMC[2])^2)/0.2023
+```
+###Poisson model v. Negative Binomial model
+```{r}
+#Informal comparison using AIC
+fit1.HMC$aic
+fit1_nb.HMC$aic
+#Formal comparison using likelihood
+L <- -2*(as.numeric(logLik(fit1.HMC)))-(as.numeric(logLik(fit1_nb.HMC)))
+0.5*pchisq(L, df=1, lower.tail = F)
+```
+Suggesting the poisson model is not an adequate simplification.
+
+##(d)
+```{r}
+xtabs(~race+count)
+```
+```{r}
+round(length(count[race==0])*dpois(0:6, exp(coef.HMC[1])), digits = 6)
+round(length(count[race==1])*dpois(0:6, exp(coef.HMC[1]+coef.HMC[2])), digits = 6)
+```
+```{r}
+p1 <- exp(coef_nb.HMC[1])
+p2 <- exp(coef_nb.HMC[1]+coef_nb.HMC[2])
+round(length(count[race==0])*dnbinom(0:6, size = fit1_nb.HMC$theta, mu =p1), digits = 6)
+round(length(count[race==1])*dnbinom(0:6, size = fit1_nb.HMC$theta, mu =p2), digits = 6)
+```
+
+The negative binomial model shows a more accurate prediction than what the Poisson model does.
+##(e)
+\[
+log(\frac{\hat{\mu_1}}{\hat{\mu_0}}) = log(\hat{\mu_1}) - log(\hat{\mu_0}) = \beta_1 +\beta_0 - \beta_0  = \beta_1
+\]
+```{r}
+coef.HMC[2]
+coef_nb.HMC[2]
+```
+```{r}
+p.b1.se <- summary(fit1.HMC)$coefficients[4]
+nb.b1.se <- summary(fit1_nb.HMC)$coefficients[4]
+c(p.b1.se, nb.b1.se)
+rbind(exp(c(coef.HMC[2]-1.96*p.b1.se, coef.HMC[2]+1.96*p.b1.se)), exp(c(coef_nb.HMC[2]-1.96*nb.b1.se, coef_nb.HMC[2]+1.96*nb.b1.se)))
+```
+
+Since we had enough evidence suggesting the existence of overdispersion, we conclude that the interval for the negative binomial model is more reliable.
+##(f)
+```{r}
+fit1_quasi.HMC <- glm(count~race, family=quasipoisson)
+summary(fit1_quasi.HMC)
+```
+```{r}
+coef(fit1.HMC)
+coef(fit1_nb.HMC)
+coef(fit1_quasi.HMC)
+```
+```{r}
+sqrt(diag(summary(fit1.HMC)$cov.unscaled))
+sqrt(diag(summary(fit1_nb.HMC)$cov.unscaled))
+sqrt(diag(summary(fit1_quasi.HMC)$cov.scaled))
+```
+```{r}
+#observed
+c(var_black, var_white)
+#Nbinom
+c(exp(coef(fit1_nb.HMC)[1]+coef(fit1_nb.HMC)[2]) + (exp(coef(fit1_nb.HMC)[1]+coef(fit1_nb.HMC)[2]))^2/fit1_nb.HMC$theta,
+exp(coef(fit1_nb.HMC)[1]) + (exp(coef(fit1_nb.HMC)[1]))^2/fit1_nb.HMC$theta)
+#quasipoisson
+c(exp(coef(fit1_quasi.HMC)[1]+coef(fit1_quasi.HMC)[2])*sqrt(summary(fit1_quasi.HMC)$dispersion), exp(coef(fit1_quasi.HMC)[1])*sqrt(summary(fit1_quasi.HMC)$dispersion))
+```
+Negative binomial is BETTER.
+
+#A20
+Let us read in the data first:
+```{r}
+people <- c(33,63,157,38,108,159,3238,7193,4908,2448,8769,3361)
+gender <- rep(c(rep("M", 3),rep("F",3)),2)
+missing <- c(rep("Missing",6),rep("Found",6))
+age <- rep(c("<13","14-18",">19"),4)
+```
+##(a)
+Try fitting models
+```{r}
+fit1.MP <- glm(people~factor(gender)*factor(missing)*factor(age), family=poisson)
+fit2.MP <- glm(people~gender+missing+age+gender:missing+gender:age+missing:age, family=poisson, x =TRUE)
+fit3.MP <- glm(people~factor(gender)+factor(missing)+factor(age)+factor(gender):factor(missing)+factor(gender):factor(age), family=poisson)
+fit4.MP <- glm(people~factor(gender)+factor(missing)+factor(age)+factor(gender):factor(missing)+factor(missing):factor(age), family=poisson)
+fit5.MP <- glm(people~factor(gender)+factor(missing)+factor(age)+factor(gender):factor(age)+factor(missing):factor(age), family=poisson)
+
+```
+```{r}
+#Model selection (analysis of deviance)
+anova(fit1.MP, fit2.MP,test="Chi")
+anova(fit2.MP, fit3.MP, test="Chi")
+anova(fit2.MP, fit4.MP, test="Chi")
+anova(fit2.MP, fit5.MP, test="Chi")
+```
+Here also we can conclude that homogeneous association model is the most adequate simplification of the saturated model.
+```{r}
+lambda <- coef(fit2.MP)
+round((lambda),digits=4)
+#Fisher Information Matrix I.inv
+
+I <- t(fit2.MP$x)%*%diag(fit2.MP$weights)%*%fit2.MP$x 
+I.inv <- solve(I)
+```
+```{r}
+#significant
+c(exp(-lambda[6]-qnorm(0.975)*sqrt(I.inv[6,6])),exp(-lambda[6]+qnorm(0.975)*sqrt(I.inv[6,6])))
+#significant
+c(exp(lambda[7]-qnorm(0.975)*sqrt(I.inv[7,7])),exp(lambda[7]+qnorm(0.975)*sqrt(I.inv[7,7])))V
+#significant
+c(exp(-lambda[8]-qnorm(0.975)*sqrt(I.inv[8,8])),exp(-lambda[8]+qnorm(0.975)*sqrt(I.inv[8,8])))
+#significant
+c(exp(lambda[9]-qnorm(0.975)*sqrt(I.inv[9,9])),exp(lambda[9]+qnorm(0.975)*sqrt(I.inv[9,9])))
+#not significant
+c(exp(-lambda[10]-qnorm(0.975)*sqrt(I.inv[10,10])),exp(-lambda[10]+qnorm(0.975)*sqrt(I.inv[10,10])))
+```
+##(b)
+```{r}
+fit5.MP <- glm(people~gender+missing+age+gender:age+missing:age, family=poisson, x=TRUE)
+summary(fit5.MP)
+```
+```{r}
+deviance(fit5.MP)
+pchisq(deviance(fit5.MP), df=3, lower.tail = FALSE)
+```
+It does not seem to be a good fit
+```{r}
+lambda2 <- coef(fit5.MP)
+lambda2
+I2 <- t(fit5.MP$x)%*%diag(fit5.MP$weights)%*%fit5.MP$x
+I2.inv <- solve(I2)
+```
+```{r}
+c(exp(lambda2[6]-qnorm(0.975)*sqrt(I2.inv[6,6])),exp(lambda2[6]+qnorm(0.975)*sqrt(I2.inv[6,6])))
+c(exp(-lambda2[7]-qnorm(0.975)*sqrt(I2.inv[7,7])),exp(-lambda2[7]+qnorm(0.975)*sqrt(I2.inv[7,7])))
+c(exp(lambda2[8]-qnorm(0.975)*sqrt(I2.inv[8,8])),exp(lambda2[8]+qnorm(0.975)*sqrt(I2.inv[8,8])))
+c(exp(-lambda2[9]-qnorm(0.975)*sqrt(I2.inv[9,9])),exp(-lambda2[9]+qnorm(0.975)*sqrt(I2.inv[9,9])))
+```
+```{r}
+cbind(people, round(predict(fit2.MP, type="response"),1),round(predict(fit5.MP, type="response"),1))
+```
+Since there is an association between missing status and gender, so it might be wise to use the homogeneous association model
+```{r}
+bpeople <- cbind(people[1:6], people[7:12])
+bgender <- gender[1:6]
+bage <- age[1:6]
+```
+
+```{r}
+lm.s <- glm(bpeople~bgender*bage, family = binomial)
+lm.h <- glm(bpeople~bgender+bage, family = binomial, x=TRUE)
+lm.ci.a <- glm(bpeople~bgender, family = binomial)
+lm.ci.g <- glm(bpeople ~ bage, family= binomial)
+lm.ji <- glm(bpeople ~1, family= binomial)
+```
+```{r}
+anova(lm.s, lm.h, lm.ci.a, lm.ji, test="Chi")
+```
+```{r}
+beta <- coef(lm.h)
+beta
+I3 <- t(lm.h$x)%*%diag(lm.h$weights)%*%lm.h$x
+I3.inv <- solve(I3)
+```
+```{r}
+c(exp(-beta[2]-qnorm(0.975)*sqrt(I3.inv[2,2])),exp(-beta[2]+qnorm(0.975)*sqrt(I3.inv[2,2])))
+c(exp(beta[3]-qnorm(0.975)*sqrt(I3.inv[3,3])),exp(beta[3]+qnorm(0.975)*sqrt(I3.inv[3,3])))
+c(exp(-beta[4]-qnorm(0.975)*sqrt(I3.inv[4,4])),exp(-beta[4]+qnorm(0.975)*sqrt(I3.inv[4,4])))
+```
+
+```{r}
+missing.u <- rep(missing, people)
+gender.u <- rep(gender, people)
+age.u <- rep(age,people)
+response <- as.numeric(missing.u == "Missing")
+lm.h.u <- glm(response~gender.u + age.u, family=binomial)
+
+```
+```{r}
+summary(lm.h)
+```
+```{r}
+summary(lm.h.u)
+```
+Deviance residual and AIC changed
+due to different saturated model
+
